@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Plus, Check, User, ChevronDown, Calendar, MapPin, Sparkles } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useAuth } from '../contexts/AuthContext';
 import AIService from '../services/AIService';
 
 interface CropScreenProps {
@@ -15,6 +16,11 @@ interface Crop {
   season: string;
   sowingDate: string;
   area: string;
+  location?: string;
+  soilType?: string;
+  irrigationType?: string;
+  expectedHarvest?: string;
+  notes?: string;
   todos: TodoItem[];
 }
 
@@ -28,6 +34,7 @@ interface TodoItem {
 
 const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
   const { t } = useLanguage();
+  const { user } = useAuth();
   const [showAddForm, setShowAddForm] = useState(false);
   const [isGeneratingTodos, setIsGeneratingTodos] = useState(false);
   
@@ -37,24 +44,65 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
     variety: '',
     season: '',
     sowingDate: '',
-    area: ''
+    area: '',
+    location: '',
+    soilType: '',
+    irrigationType: '',
+    expectedHarvest: '',
+    notes: ''
   });
 
-  const [crops, setCrops] = useState<Crop[]>([
-    {
-      id: 1,
-      name: t('paddy'),
-      variety: t('sonamasuri'),
-      season: t('kharifRabi'),
-      sowingDate: '15-July-2025',
-      area: '2 ' + t('acres'),
-      todos: [
-        { id: 1, text: t('water'), completed: false, priority: 'high', dueDate: '7am-9am' },
-        { id: 2, text: t('sprayFertilizer'), completed: false, priority: 'medium' },
-        { id: 3, text: t('monitorField'), completed: false, priority: 'low' },
-      ]
+  // Load crops from localStorage on component mount
+  const loadCropsFromStorage = () => {
+    try {
+      const savedCrops = localStorage.getItem(`farmar_crops_${user?.id || 'guest'}`);
+      if (savedCrops) {
+        const parsedCrops = JSON.parse(savedCrops);
+        return parsedCrops.map((crop: any) => ({
+          ...crop,
+          todos: crop.todos.map((todo: any) => ({
+            ...todo,
+            id: typeof todo.id === 'string' ? parseInt(todo.id) : todo.id
+          }))
+        }));
+      }
+    } catch (error) {
+      console.error('Error loading crops from storage:', error);
     }
-  ]);
+    
+    // Return default crop if no saved data
+    return [
+      {
+        id: 1,
+        name: t('paddy'),
+        variety: t('sonamasuri'),
+        season: t('kharifRabi'),
+        sowingDate: '15-July-2025',
+        area: '2 ' + t('acres'),
+        location: 'Hyderabad',
+        soilType: 'Black Cotton Soil',
+        irrigationType: 'Drip Irrigation',
+        expectedHarvest: '15-Nov-2025',
+        notes: 'First crop of the season',
+        todos: [
+          { id: 1, text: t('water'), completed: false, priority: 'high', dueDate: '7am-9am' },
+          { id: 2, text: t('sprayFertilizer'), completed: false, priority: 'medium' },
+          { id: 3, text: t('monitorField'), completed: false, priority: 'low' },
+        ]
+      }
+    ];
+  };
+
+  const [crops, setCrops] = useState<Crop[]>(() => loadCropsFromStorage());
+
+  // Save crops to localStorage whenever crops change
+  React.useEffect(() => {
+    try {
+      localStorage.setItem(`farmar_crops_${user?.id || 'guest'}`, JSON.stringify(crops));
+    } catch (error) {
+      console.error('Error saving crops to storage:', error);
+    }
+  }, [crops, user?.id]);
 
   const cropOptions = [
     { value: 'paddy', label: t('paddy') },
@@ -79,6 +127,24 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
     { value: 'rabi', label: 'Rabi (Winter)' },
     { value: 'zaid', label: 'Zaid (Summer)' },
     { value: 'perennial', label: 'Perennial' },
+  ];
+
+  const soilTypeOptions = [
+    'Alluvial Soil',
+    'Black Cotton Soil',
+    'Red Soil',
+    'Laterite Soil',
+    'Sandy Soil',
+    'Clay Soil',
+    'Loamy Soil'
+  ];
+
+  const irrigationTypeOptions = [
+    'Drip Irrigation',
+    'Sprinkler Irrigation',
+    'Flood Irrigation',
+    'Furrow Irrigation',
+    'Rain-fed'
   ];
 
   const generateAITodos = (cropName: string, variety: string, season: string) => {
@@ -139,7 +205,7 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
   };
 
   const handleAddCrop = async () => {
-    if (!formData.cropName || !formData.variety || !formData.season || !formData.sowingDate || !formData.area) {
+    if (!formData.cropName || !formData.variety || !formData.season || !formData.sowingDate || !formData.area || !formData.location) {
       return;
     }
 
@@ -157,11 +223,27 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
       season: formData.season,
       sowingDate: formData.sowingDate,
       area: formData.area,
+      location: formData.location,
+      soilType: formData.soilType,
+      irrigationType: formData.irrigationType,
+      expectedHarvest: formData.expectedHarvest,
+      notes: formData.notes,
       todos: aiTodos,
     };
 
     setCrops([...crops, newCrop]);
-    setFormData({ cropName: '', variety: '', season: '', sowingDate: '', area: '' });
+    setFormData({ 
+      cropName: '', 
+      variety: '', 
+      season: '', 
+      sowingDate: '', 
+      area: '',
+      location: '',
+      soilType: '',
+      irrigationType: '',
+      expectedHarvest: '',
+      notes: ''
+    });
     setShowAddForm(false);
     setIsGeneratingTodos(false);
   };
@@ -227,12 +309,17 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
             {/* Crop Info */}
             <div className="mb-6">
               <h2 className="text-xl font-bold text-black mb-4">{crop.name} - {t('crop')} {cropIndex + 1}</h2>
-              <div className="grid grid-cols-2 gap-3 text-black text-sm">
+              <div className="grid grid-cols-1 gap-3 text-black text-sm">
                 <div><span className="font-semibold">{t('cropName')}:</span> {crop.name}</div>
                 <div><span className="font-semibold">{t('variety')}:</span> {crop.variety}</div>
                 <div><span className="font-semibold">{t('season')}:</span> {crop.season}</div>
                 <div><span className="font-semibold">{t('sowingDate')}:</span> {crop.sowingDate}</div>
-                <div className="col-span-2"><span className="font-semibold">{t('area')}:</span> {crop.area}</div>
+                <div><span className="font-semibold">{t('area')}:</span> {crop.area}</div>
+                {crop.location && <div><span className="font-semibold">{t('location')}:</span> {crop.location}</div>}
+                {crop.soilType && <div><span className="font-semibold">{t('soilType')}:</span> {crop.soilType}</div>}
+                {crop.irrigationType && <div><span className="font-semibold">{t('irrigationType')}:</span> {crop.irrigationType}</div>}
+                {crop.expectedHarvest && <div><span className="font-semibold">{t('expectedHarvest')}:</span> {crop.expectedHarvest}</div>}
+                {crop.notes && <div><span className="font-semibold">{t('notes')}:</span> {crop.notes}</div>}
               </div>
             </div>
 
@@ -379,6 +466,72 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
                     <option value="hectares">Hectares</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">{t('location')}</label>
+                <input
+                  type="text"
+                  placeholder="Enter farm location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  required
+                  className="w-full px-4 py-3 bg-white text-black rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Soil Type */}
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">{t('soilType')}</label>
+                <select
+                  value={formData.soilType}
+                  onChange={(e) => setFormData({ ...formData, soilType: e.target.value })}
+                  className="w-full px-4 py-3 bg-white text-black rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Select soil type</option>
+                  {soilTypeOptions.map(soil => (
+                    <option key={soil} value={soil}>{soil}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Irrigation Type */}
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">{t('irrigationType')}</label>
+                <select
+                  value={formData.irrigationType}
+                  onChange={(e) => setFormData({ ...formData, irrigationType: e.target.value })}
+                  className="w-full px-4 py-3 bg-white text-black rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Select irrigation type</option>
+                  {irrigationTypeOptions.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Expected Harvest Date */}
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">{t('expectedHarvest')}</label>
+                <input
+                  type="date"
+                  value={formData.expectedHarvest}
+                  onChange={(e) => setFormData({ ...formData, expectedHarvest: e.target.value })}
+                  className="w-full px-4 py-3 bg-white text-black rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">{t('notes')}</label>
+                <textarea
+                  placeholder="Additional notes about this crop"
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-3 bg-white text-black rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+                />
               </div>
 
               {/* Action Buttons */}
