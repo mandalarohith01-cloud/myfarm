@@ -38,8 +38,6 @@ const AuthScreen: React.FC = () => {
     pincode: '',
     
    
-    
-    
     // Financial Information
     annualIncome: '',
     landOwnership: '',
@@ -242,8 +240,6 @@ const AuthScreen: React.FC = () => {
       username: '', password: '', firstName: '', lastName: '', mobile: '', email: '',
       farmName: '', farmerType: '', experience: '', education: '', farmSize: '',
       farmLocation: '', state: '', district: '', village: '', pincode: '',
-      soilType: '', soilPH: '', soilMoisture: '', soilFertility: '', irrigationType: '', waterSource: '',
-      primaryCrops: [], secondaryCrops: [], farmingMethod: '', season: '',
       annualIncome: '', landOwnership: '', hasInsurance: false, hasLoan: false, bankAccount: '',
       soilTestDocument: null, soilTestResults: null, recommendedCrops: []
     });
@@ -267,7 +263,7 @@ const AuthScreen: React.FC = () => {
   };
 
   const getStepProgress = () => {
-    return (currentStep / 7) * 100;
+    return (currentStep / 6) * 100;
   };
 
   const renderStepContent = () => {
@@ -445,113 +441,6 @@ const AuthScreen: React.FC = () => {
             exit={{ opacity: 0, x: -50 }}
             className="space-y-4"
           >
-            <h3 className="text-xl font-bold text-center mb-6 text-cream">Soil Information</h3>
-            
-            {/* Soil Type */}
-            <div className="relative">
-              <Thermometer size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 z-10" />
-              <select
-                value={formData.soilType}
-                onChange={(e) => handleInputChange('soilType', e.target.value)}
-                className="w-full pl-12 pr-10 py-4 bg-cream text-black rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all appearance-none"
-              >
-                <option value="">Select Soil Type</option>
-                {soilTypes.map(soil => (
-                  <option key={soil} value={soil}>{soil}</option>
-                ))}
-              </select>
-              <ChevronDown size={20} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none" />
-            </div>
-
-            {/* Soil pH */}
-            <div className="relative">
-              <Zap size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600" />
-              <input
-                type="number"
-                step="0.1"
-                placeholder="Soil pH (6.0-8.0)"
-                value={formData.soilPH}
-                onChange={(e) => handleInputChange('soilPH', e.target.value)}
-                className="w-full pl-12 pr-6 py-4 bg-cream text-black rounded-2xl text-lg placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
-              />
-            </div>
-
-            {/* Soil Fertility */}
-            <div className="relative">
-              <Wheat size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 z-10" />
-              <select
-                value={formData.soilFertility}
-                onChange={(e) => handleInputChange('soilFertility', e.target.value)}
-                className="w-full pl-12 pr-10 py-4 bg-cream text-black rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all appearance-none"
-              >
-                <option value="">Soil Fertility Level</option>
-                <option value="high">High Fertility</option>
-                <option value="medium">Medium Fertility</option>
-                <option value="low">Low Fertility</option>
-                <option value="unknown">Unknown</option>
-              </select>
-              <ChevronDown size={20} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none" />
-            </div>
-
-            {/* Irrigation Type */}
-            <div className="relative">
-              <Droplets size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 z-10" />
-              <select
-                value={formData.irrigationType}
-                onChange={(e) => handleInputChange('irrigationType', e.target.value)}
-                className="w-full pl-12 pr-10 py-4 bg-cream text-black rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all appearance-none"
-              >
-                <option value="">Select Irrigation Type</option>
-                {irrigationTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-              <ChevronDown size={20} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none" />
-            </div>
-
-            {/* Water Source */}
-            <div className="relative">
-              <Droplets size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 z-10" />
-              <select
-                value={formData.waterSource}
-                onChange={(e) => handleInputChange('waterSource', e.target.value)}
-                className="w-full pl-12 pr-10 py-4 bg-cream text-black rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all appearance-none"
-              >
-                <option value="">Select Water Source</option>
-                {waterSources.map(source => (
-                  <option key={source} value={source}>{source}</option>
-                ))}
-              </select>
-              <ChevronDown size={20} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none" />
-            </div>
-
-            {/* Farming Method */}
-            <div className="relative">
-              <Wheat size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 z-10" />
-              <select
-                value={formData.farmingMethod}
-                onChange={(e) => handleInputChange('farmingMethod', e.target.value)}
-                className="w-full pl-12 pr-10 py-4 bg-cream text-black rounded-2xl text-lg focus:outline-none focus:ring-2 focus:ring-green-500 transition-all appearance-none"
-              >
-                <option value="">Farming Method</option>
-                <option value="organic">Organic Farming</option>
-                <option value="conventional">Conventional Farming</option>
-                <option value="mixed">Mixed Farming</option>
-                <option value="sustainable">Sustainable Farming</option>
-              </select>
-              <ChevronDown size={20} className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none" />
-            </div>
-          </motion.div>
-        );
-
-      case 4:
-        return (
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            className="space-y-4"
-          >
             <h3 className="text-xl font-bold text-center mb-6 text-cream">Crop Information</h3>
             
             {/* Season */}
@@ -573,7 +462,7 @@ const AuthScreen: React.FC = () => {
           </motion.div>
         );
 
-      case 5:
+      case 4:
         return (
           <motion.div
             initial={{ opacity: 0, x: 50 }}
@@ -655,7 +544,7 @@ const AuthScreen: React.FC = () => {
           </motion.div>
         );
 
-      case 6:
+      case 5:
         return (
           <motion.div
             initial={{ opacity: 0, x: 50 }}
@@ -761,7 +650,7 @@ const AuthScreen: React.FC = () => {
           </motion.div>
         );
         
-      case 7:
+      case 6:
         return (
           <motion.div
             initial={{ opacity: 0, x: 50 }}
@@ -936,7 +825,7 @@ const AuthScreen: React.FC = () => {
                 className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-2xl text-center"
               >
                 {error}
-              </motion.div>
+            <span>Step {currentStep} of 6</span>
             )}
 
             {/* Demo Instructions */}
@@ -1029,32 +918,32 @@ const AuthScreen: React.FC = () => {
                 </motion.button>
               )}
               
-              {currentStep < 7 ? (
+              {currentStep < 6 ? (
                 <motion.button
                   type="button"
                   onClick={() => {
-                    if (currentStep === 5) {
+                    if (currentStep === 4) {
                       // Skip to soil analysis if no document uploaded
                       if (!soilAnalysisResult) {
-                        setCurrentStep(6);
+                        setCurrentStep(5);
                       } else {
                         nextStep();
                       }
-                    } else if (currentStep === 6) {
+                    } else if (currentStep === 5) {
                       // Skip to crop recommendations if soil analysis complete
                       if (soilAnalysisResult) {
-                        setCurrentStep(7);
+                        setCurrentStep(6);
                       }
                     } else {
                       nextStep();
                     }
                   }}
-                  disabled={currentStep === 6 && isAnalyzingSoil}
+                  disabled={currentStep === 5 && isAnalyzingSoil}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="flex-1 py-3 px-6 bg-green-600 text-white rounded-2xl font-semibold disabled:opacity-50"
                 >
-                  {currentStep === 6 && isAnalyzingSoil ? 'Analyzing...' : 'Next'}
+                  {currentStep === 5 && isAnalyzingSoil ? 'Analyzing...' : 'Next'}
                 </motion.button>
               ) : (
                 <motion.button
