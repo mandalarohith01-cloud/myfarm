@@ -3,7 +3,6 @@ import { AnimatePresence } from 'framer-motion';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
-import { CropProvider } from './contexts/CropContext';
 import AuthScreen from './screens/AuthScreen';
 import RegistrationScreen from './screens/RegistrationScreen';
 import DashboardScreen from './screens/DashboardScreen';
@@ -29,11 +28,7 @@ const AppContent: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-cream border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <div className="text-white text-xl">Loading FARMAR...</div>
-          <div className="text-gray-400 text-sm mt-2">Preparing your farming dashboard</div>
-        </div>
+        <div className="text-white text-xl">Loading...</div>
       </div>
     );
   }
@@ -89,13 +84,11 @@ function App() {
 
   return (
     <AuthProvider>
-      <CropProvider>
-        <NotificationProvider>
-          <LanguageProvider>
-            <AppContent />
-          </LanguageProvider>
-        </NotificationProvider>
-      </CropProvider>
+      <NotificationProvider>
+        <LanguageProvider>
+          <AppContent />
+        </LanguageProvider>
+      </NotificationProvider>
     </AuthProvider>
   );
 }
