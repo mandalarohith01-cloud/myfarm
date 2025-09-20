@@ -15,6 +15,11 @@ interface Crop {
   season: string;
   sowingDate: string;
   area: string;
+  location?: string;
+  soilType?: string;
+  irrigationType?: string;
+  expectedHarvest?: string;
+  notes?: string;
   todos: TodoItem[];
 }
 
