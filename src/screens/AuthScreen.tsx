@@ -124,7 +124,7 @@ const AuthScreen: React.FC = () => {
       const signupData = {
         ...formData,
         recommendedCrops: selectedCrops,
-        soilAnalysis: aiAdvisorResponse?.soilAnalysis
+        aiAdvisorResponse: aiAdvisorResponse
       };
       const success = await signup(signupData);
       if (success) {
@@ -536,7 +536,7 @@ const AuthScreen: React.FC = () => {
               <h3 className="text-xl font-bold text-cream">Soil Test Analysis (AI Powered)</h3>
             </div>
             
-            {!aiAdvisorResponse?.soilAnalysis ? (
+            {!aiAdvisorResponse ? (
               <div className="space-y-4">
                 <p className="text-cream text-sm mb-4">
                   Upload your soil test report and our AI will analyze it to recommend the best crops for your land.
@@ -588,38 +588,107 @@ const AuthScreen: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="bg-green-100 p-4 rounded-2xl">
+                <div className="bg-gradient-to-r from-green-100 to-blue-100 p-4 rounded-2xl">
                   <div className="flex items-center space-x-2 mb-3">
                     <CheckCircle size={20} className="text-green-600" />
-                    <h4 className="font-bold text-black">Soil Analysis Complete!</h4>
+                    <h4 className="font-bold text-black">🤖 AI Soil Analysis Complete!</h4>
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="grid grid-cols-2 gap-3 text-sm mb-4">
                     <div className="text-black">
-                      <span className="font-semibold">pH Level:</span> {aiAdvisorResponse.soilAnalysis.ph}
+                      <span className="font-semibold">pH Level:</span> {aiAdvisorResponse?.soilAnalysis.ph.toFixed(1)}
                     </div>
                     <div className="text-black">
-                      <span className="font-semibold">Soil Type:</span> {aiAdvisorResponse.soilAnalysis.soilType}
+                      <span className="font-semibold">Soil Type:</span> {aiAdvisorResponse?.soilAnalysis.soilType}
                     </div>
                     <div className="text-black">
-                      <span className="font-semibold">Nitrogen:</span> {aiAdvisorResponse.soilAnalysis.nitrogen}
+                      <span className="font-semibold">Nitrogen:</span> {aiAdvisorResponse?.soilAnalysis.nitrogen}
                     </div>
                     <div className="text-black">
-                      <span className="font-semibold">Phosphorus:</span> {aiAdvisorResponse.soilAnalysis.phosphorus}
+                      <span className="font-semibold">Phosphorus:</span> {aiAdvisorResponse?.soilAnalysis.phosphorus}
                     </div>
                     <div className="text-black">
-                      <span className="font-semibold">Potassium:</span> {aiAdvisorResponse.soilAnalysis.potassium}
+                      <span className="font-semibold">Potassium:</span> {aiAdvisorResponse?.soilAnalysis.potassium}
                     </div>
                     <div className="text-black">
-                      <span className="font-semibold">Organic Matter:</span> {aiAdvisorResponse.soilAnalysis.organicMatter}
+                      <span className="font-semibold">Organic Matter:</span> {aiAdvisorResponse?.soilAnalysis.organicMatter}
                     </div>
                   </div>
                 </div>
                 
-                <div className="bg-yellow-100 p-4 rounded-2xl">
-                  <h4 className="font-bold text-black mb-2">AI Recommendations:</h4>
+                <div className="bg-blue-100 p-4 rounded-2xl">
+                  <h4 className="font-bold text-black mb-2">🤖 What our AI Agricultural Advisor analyzes:</h4>
                   <ul className="text-black text-sm space-y-1">
-                    {aiAdvisorResponse.soilAnalysis.recommendations.map((rec, index) => (
+                    <li>• Comprehensive soil health assessment</li>
+                    <li>• Climate and weather pattern analysis</li>
+                    <li>• Crop suitability analysis</li>
+                    <li>• Profitability projections</li>
+                    <li>• Market demand forecasting</li>
+                    <li>• Risk assessment</li>
+                    <li>• Sustainable farming recommendations</li>
+                  </ul>
+                </div>
+                
+                {/* Overall Assessment */}
+                {aiAdvisorResponse?.overallAssessment && (
+                  <div className="bg-white/50 p-3 rounded-xl mb-3">
+                    <h5 className="font-bold text-black mb-2">📊 Overall Assessment:</h5>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="text-black">
+                        <span className="font-semibold">Soil Health:</span> 
+                        <span className={`ml-1 capitalize ${
+                          aiAdvisorResponse.overallAssessment.soilHealth === 'excellent' ? 'text-green-600' :
+                          aiAdvisorResponse.overallAssessment.soilHealth === 'good' ? 'text-blue-600' :
+                          aiAdvisorResponse.overallAssessment.soilHealth === 'fair' ? 'text-orange-600' :
+                          'text-red-600'
+                        }`}>
+                          {aiAdvisorResponse.overallAssessment.soilHealth}
+                        </span>
+                      </div>
+                      <div className="text-black">
+                        <span className="font-semibold">Farming Potential:</span> 
+                        <span className={`ml-1 capitalize ${
+                          aiAdvisorResponse.overallAssessment.farmingPotential === 'high' ? 'text-green-600' :
+                          aiAdvisorResponse.overallAssessment.farmingPotential === 'medium' ? 'text-orange-600' :
+                          'text-red-600'
+                        }`}>
+                          {aiAdvisorResponse.overallAssessment.farmingPotential}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Soil Improvements */}
+                {aiAdvisorResponse?.soilImprovements && aiAdvisorResponse.soilImprovements.length > 0 && (
+                  <div className="bg-yellow-100 p-4 rounded-2xl">
+                    <h4 className="font-bold text-black mb-2">🔧 Soil Improvement Recommendations:</h4>
+                    <div className="space-y-2">
+                      {aiAdvisorResponse.soilImprovements.slice(0, 3).map((improvement, index) => (
+                        <div key={index} className="bg-white/50 p-2 rounded-lg">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              improvement.priority === 'high' ? 'bg-red-100 text-red-600' :
+                              improvement.priority === 'medium' ? 'bg-orange-100 text-orange-600' :
+                              'bg-green-100 text-green-600'
+                            }`}>
+                              {improvement.priority}
+                            </span>
+                            <span className="text-black text-sm font-semibold">{improvement.issue}</span>
+                          </div>
+                          <p className="text-black text-xs">{improvement.solution}</p>
+                          <p className="text-gray-600 text-xs">Cost: {improvement.cost} | Timeline: {improvement.timeframe}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Basic Recommendations */}
+                <div className="bg-blue-100 p-4 rounded-2xl">
+                  <h4 className="font-bold text-black mb-2">💡 Basic Recommendations:</h4>
+                  <ul className="text-black text-sm space-y-1">
+                    {aiAdvisorResponse?.soilAnalysis.recommendations.map((rec, index) => (
                       <li key={index}>• {rec}</li>
                     ))}
                   </ul>
@@ -949,14 +1018,14 @@ const AuthScreen: React.FC = () => {
                   onClick={() => {
                     if (currentStep === 4) {
                       // Skip to soil analysis if no document uploaded
-                      if (!aiAdvisorResponse?.soilAnalysis) {
+                      if (!aiAdvisorResponse) {
                         setCurrentStep(5);
                       } else {
                         nextStep();
                       }
                     } else if (currentStep === 5) {
                       // Skip to crop recommendations if soil analysis complete
-                      if (aiAdvisorResponse?.soilAnalysis) {
+                      if (aiAdvisorResponse) {
                         setCurrentStep(6);
                       }
                     } else {
