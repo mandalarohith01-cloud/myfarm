@@ -37,6 +37,17 @@ const AuthScreen: React.FC = () => {
     village: '',
     pincode: '',
     
+    // Soil and Crop Information
+    soilType: '',
+    soilPH: '',
+    soilMoisture: '',
+    soilFertility: '',
+    irrigationType: '',
+    waterSource: '',
+    primaryCrops: [],
+    secondaryCrops: [],
+    farmingMethod: '',
+    season: '',
    
     // Financial Information
     annualIncome: '',
@@ -240,6 +251,8 @@ const AuthScreen: React.FC = () => {
       username: '', password: '', firstName: '', lastName: '', mobile: '', email: '',
       farmName: '', farmerType: '', experience: '', education: '', farmSize: '',
       farmLocation: '', state: '', district: '', village: '', pincode: '',
+      soilType: '', soilPH: '', soilMoisture: '', soilFertility: '', irrigationType: '', waterSource: '',
+      primaryCrops: [], secondaryCrops: [], farmingMethod: '', season: '',
       annualIncome: '', landOwnership: '', hasInsurance: false, hasLoan: false, bankAccount: '',
       soilTestDocument: null, soilTestResults: null, recommendedCrops: []
     });
