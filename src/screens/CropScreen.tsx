@@ -214,6 +214,18 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
     }));
   };
 
+  const generateAITodosFromCareInstructions = (cropData: any) => {
+    // Generate todos from care instructions
+    const careInstructions = cropData.careInstructions || [];
+    return careInstructions.map((instruction: string, index: number) => ({
+      id: Date.now() + index,
+      text: `AI Recommendation: ${instruction}`,
+      completed: false,
+      priority: index < 3 ? 'high' as const : index < 6 ? 'medium' as const : 'low' as const,
+      dueDate: `Week ${index + 1}`,
+    }));
+  };
+
   const handleAddCrop = async () => {
     if (!formData.cropName || !formData.variety || !formData.season || !formData.sowingDate || !formData.area) {
       return;
@@ -510,7 +522,7 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
                 <h3 className="text-lg font-bold text-black">{t('todoList')} (AI Recommended)</h3>
               </div>
               <div className="space-y-3 max-h-64 overflow-y-auto">
-                {JSON.parse(localStorage.getItem('ai_advisor_response') || '{}')?.cropRecommendations?.map((crop: any, index: number) => (
+                {crop.todos.map((todo, index) => (
                   <motion.div
                     key={todo.id}
                     initial={{ opacity: 0, x: -20 }}
@@ -562,15 +574,7 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
                             Completed {new Date(todo.completedAt).toLocaleDateString()}
                           </span>
                         )}
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          crop.profitability?.score >= 8 ? 'bg-green-400 text-white' :
-                          crop.profitability?.score >= 6 ? 'bg-orange-400 text-white' :
-                          'bg-gray-400 text-white'
-                        }`}>
-                          Profit: {crop.profitability?.score || 'N/A'}/10
-                        </span>
                       </div>
-                      <p className="text-white/70 text-xs mt-1">{crop.reason}</p>
                     </div>
                   </motion.div>
                 ))}
@@ -579,7 +583,7 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
           </motion.div>
         ))}
       </div>
-                      {isGeneratingTodos ? 'Adding with AI Tasks...' : 'Add Crop'}
+
       {/* Add Crop Form */}
       <AnimatePresence>
         {showAddForm && (
@@ -706,7 +710,7 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
                       <span>Add Crop with AI</span>
                     </>
                   )}
-                )) || []}
+                </motion.button>
               </div>
             </div>
           </motion.div>
