@@ -26,7 +26,7 @@ interface SignupData {
   lastName: string;
   mobile: string;
   recommendedCrops?: string[];
-  soilAnalysis?: any;
+  aiAdvisorResponse?: any;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -210,7 +210,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Store recommended crops for later use in crop section
           if (userData.recommendedCrops && userData.recommendedCrops.length > 0) {
             localStorage.setItem('recommended_crops', JSON.stringify(userData.recommendedCrops));
-            localStorage.setItem('soil_analysis', JSON.stringify(userData.soilAnalysis));
+            localStorage.setItem('ai_advisor_response', JSON.stringify(userData.aiAdvisorResponse));
           }
           
           return true;

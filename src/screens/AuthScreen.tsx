@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { User, Lock, Phone, Eye, EyeOff, UserPlus, LogIn, MapPin, Droplets, Thermometer, Zap, Wheat, Home, Calendar, CreditCard, Banknote, ChevronDown, Upload, FileText, Camera, Sparkles, CheckCircle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
-import AIService from '../services/AIService';
+import AIAgriculturalAdvisor, { AIAdvisorResponse } from '../services/AIAgriculturalAdvisor';
 
 const AuthScreen: React.FC = () => {
   const { t } = useLanguage();
@@ -12,8 +12,7 @@ const AuthScreen: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [isAnalyzingSoil, setIsAnalyzingSoil] = useState(false);
-  const [soilAnalysisResult, setSoilAnalysisResult] = useState(null);
-  const [recommendedCrops, setRecommendedCrops] = useState([]);
+  const [aiAdvisorResponse, setAiAdvisorResponse] = useState<AIAdvisorResponse | null>(null);
   const [selectedCrops, setSelectedCrops] = useState([]);
   
   const [formData, setFormData] = useState({
@@ -125,7 +124,7 @@ const AuthScreen: React.FC = () => {
       const signupData = {
         ...formData,
         recommendedCrops: selectedCrops,
-        soilAnalysis: soilAnalysisResult
+        aiAdvisorResponse: aiAdvisorResponse
       };
       const success = await signup(signupData);
       if (success) {
@@ -160,82 +159,50 @@ const AuthScreen: React.FC = () => {
       setIsAnalyzingSoil(true);
       
       try {
-        // Convert file to base64 for AI analysis
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-          const base64Data = e.target?.result as string;
-          
-          // Simulate AI analysis of soil test document
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          
-          // Mock soil analysis results
-          const mockSoilAnalysis = {
-            ph: 6.8,
-            nitrogen: 'Medium',
-            phosphorus: 'High',
-            potassium: 'Low',
-            organicMatter: '2.5%',
-            soilType: 'Loamy',
-            recommendations: [
-              'Apply potassium fertilizer before planting',
-              'Maintain current pH level',
-              'Consider organic matter addition'
-            ]
-          };
-          
-          // Generate crop recommendations based on soil analysis
-          const cropRecommendations = await generateCropRecommendations(mockSoilAnalysis);
-          
-          setSoilAnalysisResult(mockSoilAnalysis);
-          setRecommendedCrops(cropRecommendations);
-          setFormData(prev => ({
-            ...prev,
-            soilTestDocument: file,
-            soilTestResults: mockSoilAnalysis
-          }));
+        // Use AI Agricultural Advisor for comprehensive analysis
+        const farmerProfile = {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          mobile: formData.mobile,
+          email: formData.email || '',
+          farmName: formData.farmName,
+          farmerType: formData.farmerType,
+          experience: formData.experience,
+          education: formData.education,
+          farmSize: formData.farmSize,
+          state: formData.state,
+          district: formData.district,
+          village: formData.village,
+          pincode: formData.pincode,
+          soilType: formData.soilType,
+          soilPH: formData.soilPH,
+          soilMoisture: formData.soilMoisture,
+          soilFertility: formData.soilFertility,
+          irrigationType: formData.irrigationType,
+          waterSource: formData.waterSource,
+          farmingMethod: formData.farmingMethod,
+          season: formData.season,
+          annualIncome: formData.annualIncome,
+          landOwnership: formData.landOwnership,
+          hasInsurance: formData.hasInsurance,
+          hasLoan: formData.hasLoan,
+          bankAccount: formData.bankAccount
         };
-        reader.readAsDataURL(file);
+
+        const response = await AIAgriculturalAdvisor.analyzeAndRecommend(farmerProfile, file);
+        setAiAdvisorResponse(response);
+        
+        setFormData(prev => ({
+          ...prev,
+          soilTestDocument: file,
+          soilTestResults: response.soilAnalysis
+        }));
       } catch (error) {
         console.error('Soil analysis failed:', error);
       } finally {
         setIsAnalyzingSoil(false);
       }
     }
-  };
-  
-  const generateCropRecommendations = async (soilData: any) => {
-    // AI-based crop recommendations based on soil analysis
-    const recommendations = [
-      {
-        name: 'Paddy',
-        variety: 'BPT 5204 (Sona Masuri)',
-        suitability: 95,
-        reason: 'Excellent match for your soil pH and nutrient levels',
-        expectedYield: '45-50 quintals/acre',
-        sowingDate: 'June 15 - July 15',
-        benefits: ['High market demand', 'Suitable for your soil type', 'Good water retention']
-      },
-      {
-        name: 'Tomato',
-        variety: 'Arka Rakshak',
-        suitability: 88,
-        reason: 'Good phosphorus levels support fruit development',
-        expectedYield: '400-500 quintals/acre',
-        sowingDate: 'Year round (protected cultivation)',
-        benefits: ['High profitability', 'Year-round cultivation', 'Value addition potential']
-      },
-      {
-        name: 'Onion',
-        variety: 'Pusa Red',
-        suitability: 82,
-        reason: 'Suitable for loamy soil with good drainage',
-        expectedYield: '200-250 quintals/acre',
-        sowingDate: 'October - November',
-        benefits: ['Good storage life', 'Stable market', 'Low water requirement']
-      }
-    ];
-    
-    return recommendations.sort((a, b) => b.suitability - a.suitability);
   };
   
   const toggleCropSelection = (cropName: string) => {
@@ -256,8 +223,7 @@ const AuthScreen: React.FC = () => {
       annualIncome: '', landOwnership: '', hasInsurance: false, hasLoan: false, bankAccount: '',
       soilTestDocument: null, soilTestResults: null, recommendedCrops: []
     });
-    setSoilAnalysisResult(null);
-    setRecommendedCrops([]);
+    setAiAdvisorResponse(null);
     setSelectedCrops([]);
     setCurrentStep(1);
   };
@@ -604,7 +570,7 @@ const AuthScreen: React.FC = () => {
                       >
                         Choose File
                       </label>
-                      <p className="text-cream text-xs mt-2">PDF, JPG, PNG up to 10MB</p>
+                      <span>Complete Registration & Add Crops</span>
                     </>
                   )}
                 </div>
@@ -673,16 +639,16 @@ const AuthScreen: React.FC = () => {
           >
             <div className="flex items-center space-x-2 mb-6">
               <Wheat size={24} className="text-green-600" />
-              <h3 className="text-xl font-bold text-cream">AI Crop Recommendations</h3>
+              <h3 className="text-xl font-bold text-cream">🤖 AI Crop Recommendations</h3>
             </div>
             
-            {recommendedCrops.length > 0 ? (
+            {aiAdvisorResponse?.cropRecommendations && aiAdvisorResponse.cropRecommendations.length > 0 ? (
               <div className="space-y-4">
                 <p className="text-cream text-sm mb-4">
-                  Based on your soil analysis, here are the best crops for your land. Select the ones you want to grow:
+                  Based on comprehensive AI analysis of your soil and farm conditions, here are the best crops for your land:
                 </p>
                 
-                {recommendedCrops.map((crop, index) => (
+                {aiAdvisorResponse.cropRecommendations.map((crop, index) => (
                   <motion.div
                     key={crop.name}
                     initial={{ opacity: 0, y: 20 }}
@@ -702,9 +668,32 @@ const AuthScreen: React.FC = () => {
                           <span className="text-xs bg-blue-500 text-white px-2 py-1 rounded-full">
                             {crop.suitability}% match
                           </span>
+                          <span className={`text-xs px-2 py-1 rounded-full ${
+                            crop.profitability.score >= 8 ? 'bg-green-500 text-white' :
+                            crop.profitability.score >= 6 ? 'bg-orange-500 text-white' :
+                            'bg-gray-500 text-white'
+                          }`}>
+                            Profit: {crop.profitability.score}/10
+                          </span>
                         </div>
                         <p className="text-black text-sm mb-2">{crop.variety}</p>
                         <p className="text-black text-xs mb-2">{crop.reason}</p>
+                        
+                        {/* Profitability Info */}
+                        <div className="bg-white/50 p-2 rounded-lg mb-2">
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="text-black">
+                              <span className="font-semibold">Revenue:</span> {crop.profitability.estimatedRevenue}
+                            </div>
+                            <div className="text-black">
+                              <span className="font-semibold">Cost:</span> {crop.profitability.estimatedCost}
+                            </div>
+                            <div className="text-black col-span-2">
+                              <span className="font-semibold">Net Profit:</span> 
+                              <span className="text-green-600 font-bold ml-1">{crop.profitability.netProfit}</span>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                       <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
                         selectedCrops.includes(crop.name)
@@ -720,6 +709,24 @@ const AuthScreen: React.FC = () => {
                     <div className="grid grid-cols-2 gap-2 text-xs text-black">
                       <div><span className="font-semibold">Expected Yield:</span> {crop.expectedYield}</div>
                       <div><span className="font-semibold">Sowing Date:</span> {crop.sowingDate}</div>
+                      <div><span className="font-semibold">Market Demand:</span> 
+                        <span className={`ml-1 capitalize ${
+                          crop.marketDemand === 'high' ? 'text-green-600' :
+                          crop.marketDemand === 'medium' ? 'text-orange-600' :
+                          'text-red-600'
+                        }`}>
+                          {crop.marketDemand}
+                        </span>
+                      </div>
+                      <div><span className="font-semibold">Risk Level:</span> 
+                        <span className={`ml-1 capitalize ${
+                          crop.riskLevel === 'low' ? 'text-green-600' :
+                          crop.riskLevel === 'medium' ? 'text-orange-600' :
+                          'text-red-600'
+                        }`}>
+                          {crop.riskLevel}
+                        </span>
+                      </div>
                     </div>
                     
                     <div className="mt-2">
@@ -739,12 +746,17 @@ const AuthScreen: React.FC = () => {
                   <p className="text-black text-sm">
                     <span className="font-semibold">Selected crops ({selectedCrops.length}):</span> {selectedCrops.join(', ') || 'None selected'}
                   </p>
+                  {selectedCrops.length > 0 && (
+                    <p className="text-black text-xs mt-2">
+                      💡 These crops will be automatically added to your "My Crops" section with AI-generated care instructions!
+                    </p>
+                  )}
                 </div>
               </div>
             ) : (
               <div className="text-center py-8">
                 <Wheat size={48} className="text-cream mx-auto mb-4 opacity-50" />
-                <p className="text-cream">Please complete soil analysis first to get crop recommendations</p>
+                <p className="text-cream">Please complete soil analysis first to get AI crop recommendations</p>
               </div>
             )}
           </motion.div>
@@ -948,36 +960,96 @@ const AuthScreen: React.FC = () => {
                         setCurrentStep(6);
                       }
                     } else {
-                      nextStep();
+              <div className="bg-gradient-to-r from-green-100 to-blue-100 p-4 rounded-2xl">
                     }
                   }}
-                  disabled={currentStep === 5 && isAnalyzingSoil}
+                  <h4 className="font-bold text-black">🤖 AI Soil Analysis Complete!</h4>
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 py-3 px-6 bg-green-600 text-white rounded-2xl font-semibold disabled:opacity-50"
+                <div className="grid grid-cols-2 gap-3 text-sm mb-4">
                 >
-                  {currentStep === 5 && isAnalyzingSoil ? 'Analyzing...' : 'Next'}
+                    <span className="font-semibold">pH Level:</span> {aiAdvisorResponse?.soilAnalysis.ph.toFixed(1)}
                 </motion.button>
               ) : (
-                <motion.button
+                    <span className="font-semibold">Soil Type:</span> {aiAdvisorResponse?.soilAnalysis.soilType}
                   type="submit"
                   disabled={isLoading}
-                  whileHover={{ scale: 1.02 }}
+                    <span className="font-semibold">Nitrogen:</span> {aiAdvisorResponse?.soilAnalysis.nitrogen}
                   whileTap={{ scale: 0.98 }}
                   className="flex-1 py-3 px-6 bg-green-600 text-white rounded-2xl font-semibold flex items-center justify-center space-x-2 disabled:opacity-50"
-                >
+                    <span className="font-semibold">Phosphorus:</span> {aiAdvisorResponse?.soilAnalysis.phosphorus}
                   {isLoading ? (
                     <motion.div
-                      animate={{ rotate: 360 }}
+                    <span className="font-semibold">Potassium:</span> {aiAdvisorResponse?.soilAnalysis.potassium}
                       transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                       className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                    />
-                  ) : (
+                    <span className="font-semibold">Organic Matter:</span> {aiAdvisorResponse?.soilAnalysis.organicMatter}
+                <h4 className="font-bold text-black mb-2">🤖 What our AI Agricultural Advisor analyzes:</h4>
+                    <p className="text-cream text-xs">This may take a few moments...</p>
+                
+                {/* Overall Assessment */}
+                {aiAdvisorResponse?.overallAssessment && (
+                  <div className="bg-white/50 p-3 rounded-xl mb-3">
+                    <h5 className="font-bold text-black mb-2">📊 Overall Assessment:</h5>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="text-black">
+                        <span className="font-semibold">Soil Health:</span> 
+                        <span className={`ml-1 capitalize ${
+                          aiAdvisorResponse.overallAssessment.soilHealth === 'excellent' ? 'text-green-600' :
+                          aiAdvisorResponse.overallAssessment.soilHealth === 'good' ? 'text-blue-600' :
+                          aiAdvisorResponse.overallAssessment.soilHealth === 'fair' ? 'text-orange-600' :
+                          'text-red-600'
+                        }`}>
+                          {aiAdvisorResponse.overallAssessment.soilHealth}
+                        </span>
+                      </div>
+                      <div className="text-black">
+                        <span className="font-semibold">Farming Potential:</span> 
+                        <span className={`ml-1 capitalize ${
+                          aiAdvisorResponse.overallAssessment.farmingPotential === 'high' ? 'text-green-600' :
+                          aiAdvisorResponse.overallAssessment.farmingPotential === 'medium' ? 'text-orange-600' :
+                          'text-red-600'
+                        }`}>
+                          {aiAdvisorResponse.overallAssessment.farmingPotential}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
                     <>
                       <UserPlus size={20} />
-                      <span>Complete Registration</span>
-                    </>
+              {/* Soil Improvements */}
+              {aiAdvisorResponse?.soilImprovements && aiAdvisorResponse.soilImprovements.length > 0 && (
+                <div className="bg-yellow-100 p-4 rounded-2xl">
+                  <h4 className="font-bold text-black mb-2">🔧 Soil Improvement Recommendations:</h4>
+                  <div className="space-y-2">
+                    {aiAdvisorResponse.soilImprovements.slice(0, 3).map((improvement, index) => (
+                      <div key={index} className="bg-white/50 p-2 rounded-lg">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            improvement.priority === 'high' ? 'bg-red-100 text-red-600' :
+                            improvement.priority === 'medium' ? 'bg-orange-100 text-orange-600' :
+                            'bg-green-100 text-green-600'
+                          }`}>
+                            {improvement.priority}
+                          </span>
+                          <span className="text-black text-sm font-semibold">{improvement.issue}</span>
+                        </div>
+                        <p className="text-black text-xs">{improvement.solution}</p>
+                        <p className="text-gray-600 text-xs">Cost: {improvement.cost} | Timeline: {improvement.timeframe}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Basic Recommendations */}
+              <div className="bg-blue-100 p-4 rounded-2xl">
+                <h4 className="font-bold text-black mb-2">💡 Basic Recommendations:</h4>
                   )}
+                  {aiAdvisorResponse?.soilAnalysis.recommendations.map((rec, index) => (
+                  <li>• Crop suitability analysis</li>
+                  <li>• Profitability projections</li>
                 </motion.button>
               )}
             </div>

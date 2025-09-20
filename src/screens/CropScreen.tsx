@@ -66,11 +66,11 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
   // Load recommended crops from registration
   React.useEffect(() => {
     const recommendedCrops = localStorage.getItem('recommended_crops');
-    const soilAnalysis = localStorage.getItem('soil_analysis');
+    const aiAdvisorResponse = localStorage.getItem('ai_advisor_response');
     
-    if (recommendedCrops && soilAnalysis) {
+    if (recommendedCrops && aiAdvisorResponse) {
       const crops = JSON.parse(recommendedCrops);
-      const analysis = JSON.parse(soilAnalysis);
+      const response = JSON.parse(aiAdvisorResponse);
       
       if (crops.length > 0) {
         setShowRecommendedCrops(true);
@@ -246,24 +246,25 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
   
   const addRecommendedCrop = async (cropName: string) => {
     const recommendedCrops = JSON.parse(localStorage.getItem('recommended_crops') || '[]');
-    const soilAnalysis = JSON.parse(localStorage.getItem('soil_analysis') || '{}');
+    const aiAdvisorResponse = JSON.parse(localStorage.getItem('ai_advisor_response') || '{}');
     
-    const cropData = recommendedCrops.find((crop: any) => crop.name === cropName);
+    // Find crop in AI advisor response
+    const cropData = aiAdvisorResponse?.cropRecommendations?.find((crop: any) => crop.name === cropName);
     if (!cropData) return;
     
     setIsGeneratingTodos(true);
     
-    // Generate AI todos based on recommended crop
+    // Generate AI todos based on recommended crop and care instructions
     await new Promise(resolve => setTimeout(resolve, 2000));
-    const aiTodos = generateAITodos(cropData.name, cropData.variety, 'kharif');
+    const aiTodos = generateAITodosFromCareInstructions(cropData);
     
     const newCrop: Crop = {
       id: Date.now(),
       name: cropData.name,
       variety: cropData.variety,
-      season: 'Kharif (Monsoon)',
+      season: cropData.seasonalTiming || 'Current Season',
       sowingDate: cropData.sowingDate,
-      area: '1 acre', // Default area
+      area: '1 acre',
       health: 100,
       lastHealthUpdate: new Date().toISOString(),
       todos: aiTodos,
@@ -273,10 +274,11 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
     setIsGeneratingTodos(false);
     
     // Remove from recommended crops
-    const updatedRecommended = recommendedCrops.filter((crop: any) => crop.name !== cropName);
-    localStorage.setItem('recommended_crops', JSON.stringify(updatedRecommended));
+    const updatedRecommendations = aiAdvisorResponse.cropRecommendations.filter((crop: any) => crop.name !== cropName);
+    const updatedResponse = { ...aiAdvisorResponse, cropRecommendations: updatedRecommendations };
+    localStorage.setItem('ai_advisor_response', JSON.stringify(updatedResponse));
     
-    if (updatedRecommended.length === 0) {
+    if (updatedRecommendations.length === 0) {
       setShowRecommendedCrops(false);
     }
   };
