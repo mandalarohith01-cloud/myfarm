@@ -76,7 +76,7 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
         setShowRecommendedCrops(true);
       }
     }
-  }, []);</parameter>
+  }, []);
 
   const cropOptions = [
     { value: 'paddy', label: t('paddy') },
