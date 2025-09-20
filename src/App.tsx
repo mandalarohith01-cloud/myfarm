@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { CropProvider } from './contexts/CropContext';
 import AuthScreen from './screens/AuthScreen';
 import RegistrationScreen from './screens/RegistrationScreen';
 import DashboardScreen from './screens/DashboardScreen';
@@ -84,11 +85,13 @@ function App() {
 
   return (
     <AuthProvider>
-      <NotificationProvider>
-        <LanguageProvider>
-          <AppContent />
-        </LanguageProvider>
-      </NotificationProvider>
+      <CropProvider>
+        <NotificationProvider>
+          <LanguageProvider>
+            <AppContent />
+          </LanguageProvider>
+        </NotificationProvider>
+      </CropProvider>
     </AuthProvider>
   );
 }
