@@ -22,6 +22,7 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Navigation & Features
     myCrop: 'My Crop',
+    weeklyMonitoring: 'Weekly Monitoring',
     weather: 'Weather',
     pestDetection: 'Pest Detection',
     market: 'Market',
@@ -345,6 +346,7 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Navigation & Features
     myCrop: 'मेरी फसल',
+    weeklyMonitoring: 'साप्ताहिक निगरानी',
     weather: 'मौसम',
     pestDetection: 'कीट पहचान',
     market: 'बाजार',
@@ -668,6 +670,7 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Navigation & Features
     myCrop: 'నా పంట',
+    weeklyMonitoring: 'వారపు పర్యవేక్షణ',
     weather: 'వాతావరణం',
     pestDetection: 'కీటకాల గుర్తింపు',
     market: 'మార్కెట్',
@@ -991,6 +994,7 @@ const translations: Record<Language, Record<string, string>> = {
     
     // Navigation & Features
     myCrop: 'என் பயிர்',
+    weeklyMonitoring: 'வாராந்திர கண்காணிப்பு',
     weather: 'வானிலை',
     pestDetection: 'பூச்சி கண்டறிதல்',
     market: 'சந்தை',
@@ -1312,6 +1316,7 @@ const translations: Record<Language, Record<string, string>> = {
     welcomeBack: 'ਵਾਪਸ ਜੀ ਆਇਆਂ ਨੂੰ',
     manageYourFarm: 'ਆਪਣੇ ਖੇਤ ਨੂੰ ਕੁਸ਼ਲਤਾ ਨਾਲ ਪ੍ਰਬੰਧਿਤ ਕਰੋ',
     myCrop: 'ਮੇਰੀ ਫਸਲ',
+    weeklyMonitoring: 'ਹਫ਼ਤਾਵਾਰੀ ਨਿਗਰਾਨੀ',
     weather: 'ਮੌਸਮ',
     pestDetection: 'ਕੀੜੇ ਦੀ ਪਛਾਣ',
     market: 'ਮਾਰਕੀਟ',
@@ -1370,6 +1375,7 @@ const translations: Record<Language, Record<string, string>> = {
     welcomeBack: 'ফিরে আসার জন্য স্বাগতম',
     manageYourFarm: 'আপনার খামার দক্ষতার সাথে পরিচালনা করুন',
     myCrop: 'আমার ফসল',
+    weeklyMonitoring: 'সাপ্তাহিক পর্যবেক্ষণ',
     weather: 'আবহাওয়া',
     pestDetection: 'কীটপতঙ্গ সনাক্তকরণ',
     market: 'বাজার',
@@ -1428,6 +1434,7 @@ const translations: Record<Language, Record<string, string>> = {
     welcomeBack: 'પાછા આવવા બદલ સ્વાગત',
     manageYourFarm: 'તમારા ખેતરનું કુશળતાથી સંચાલન કરો',
     myCrop: 'મારો પાક',
+    weeklyMonitoring: 'સાપ્તાહિક દેખરેખ',
     weather: 'હવામાન',
     pestDetection: 'જીવાત ઓળખ',
     market: 'બજાર',
@@ -1486,6 +1493,7 @@ const translations: Record<Language, Record<string, string>> = {
     welcomeBack: 'परत येण्याचे स्वागत',
     manageYourFarm: 'तुमच्या शेताचे कुशलतेने व्यवस्थापन करा',
     myCrop: 'माझे पीक',
+    weeklyMonitoring: 'साप्ताहिक निरीक्षण',
     weather: 'हवामान',
     pestDetection: 'कीड ओळख',
     market: 'बाजार',
@@ -1544,6 +1552,7 @@ const translations: Record<Language, Record<string, string>> = {
     welcomeBack: 'ಮರಳಿ ಬಂದಿದ್ದಕ್ಕೆ ಸ್ವಾಗತ',
     manageYourFarm: 'ನಿಮ್ಮ ಫಾರ್ಮ್ ಅನ್ನು ಪರಿಣಾಮಕಾರಿಯಾಗಿ ನಿರ್ವಹಿಸಿ',
     myCrop: 'ನನ್ನ ಬೆಳೆ',
+    weeklyMonitoring: 'ಸಾಪ್ತಾಹಿಕ ಮೇಲ್ವಿಚಾರಣೆ',
     weather: 'ಹವಾಮಾನ',
     pestDetection: 'ಕೀಟ ಗುರುತಿಸುವಿಕೆ',
     market: 'ಮಾರುಕಟ್ಟೆ',
@@ -1602,6 +1611,7 @@ const translations: Record<Language, Record<string, string>> = {
     welcomeBack: 'തിരിച്ചുവരവിന് സ്വാഗതം',
     manageYourFarm: 'നിങ്ങളുടെ ഫാം കാര്യക്ഷമമായി കൈകാര്യം ചെയ്യുക',
     myCrop: 'എന്റെ വിള',
+    weeklyMonitoring: 'പ്രതിവാര നിരീക്ഷണം',
     weather: 'കാലാവസ്ഥ',
     pestDetection: 'കീട തിരിച്ചറിയൽ',
     market: 'മാർക്കറ്റ്',
