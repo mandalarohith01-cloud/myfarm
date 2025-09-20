@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Plus, Check, User, ChevronDown, Calendar, MapPin, Sparkles, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Plus, Check, User, ChevronDown, Calendar, MapPin, Sparkles, CheckCircle, Camera, X, Download } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import AIService from '../services/AIService';
 
@@ -30,11 +30,24 @@ interface TodoItem {
   isOverdue?: boolean;
 }
 
+interface CropPhoto {
+  id: string;
+  cropId: number;
+  imageUrl: string;
+  dateTaken: string;
+  notes?: string;
+}
 const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
   const { t } = useLanguage();
   const [showAddForm, setShowAddForm] = useState(false);
   const [isGeneratingTodos, setIsGeneratingTodos] = useState(false);
   const [showRecommendedCrops, setShowRecommendedCrops] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [selectedCropForPhoto, setSelectedCropForPhoto] = useState<number | null>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [cropPhotos, setCropPhotos] = useState<CropPhoto[]>([]);
+  const [showPhotoGallery, setShowPhotoGallery] = useState(false);
+  const [selectedPhotoGallery, setSelectedPhotoGallery] = useState<number | null>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -130,6 +143,93 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
     // Ensure health stays within 0-100 range
     return Math.max(0, Math.min(100, healthScore));
   };
+
+  // Camera functions
+  const openCamera = async (cropId: number) => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { 
+          facingMode: 'environment', // Use back camera
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
+      setStream(mediaStream);
+      setSelectedCropForPhoto(cropId);
+      setShowCamera(true);
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      alert('Unable to access camera. Please check permissions.');
+    }
+  };
+
+  const closeCamera = () => {
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setShowCamera(false);
+    setSelectedCropForPhoto(null);
+  };
+
+  const capturePhoto = () => {
+    const video = document.getElementById('crop-camera-video') as HTMLVideoElement;
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    
+    if (video && context && selectedCropForPhoto) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0);
+      
+      const imageDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      
+      // Save photo
+      const newPhoto: CropPhoto = {
+        id: Date.now().toString(),
+        cropId: selectedCropForPhoto,
+        imageUrl: imageDataUrl,
+        dateTaken: new Date().toISOString(),
+        notes: `Photo taken on ${new Date().toLocaleDateString()}`
+      };
+      
+      setCropPhotos(prev => [newPhoto, ...prev]);
+      closeCamera();
+      
+      // Show success message
+      alert('Photo captured successfully!');
+    }
+  };
+
+  const getCropPhotos = (cropId: number) => {
+    return cropPhotos.filter(photo => photo.cropId === cropId);
+  };
+
+  const downloadPhoto = (photo: CropPhoto) => {
+    const link = document.createElement('a');
+    link.download = `crop-photo-${photo.dateTaken.split('T')[0]}.jpg`;
+    link.href = photo.imageUrl;
+    link.click();
+  };
+
+  // Set up video stream when camera opens
+  React.useEffect(() => {
+    if (showCamera && stream) {
+      const video = document.getElementById('crop-camera-video') as HTMLVideoElement;
+      if (video) {
+        video.srcObject = stream;
+      }
+    }
+  }, [showCamera, stream]);
+
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [stream]);
 
   // Get health status color and text
   const getHealthStatus = (health: number) => {
@@ -447,7 +547,39 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
           >
             {/* Crop Info */}
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-black mb-4">{crop.name} - {t('crop')} {cropIndex + 1}</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-black">{crop.name} - {t('crop')} {cropIndex + 1}</h2>
+                <div className="flex space-x-2">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setSelectedPhotoGallery(crop.id);
+                      setShowPhotoGallery(true);
+                    }}
+                    className="p-2 bg-blue-100 text-blue-600 rounded-full hover:bg-blue-200 transition-colors"
+                    title="View Photos"
+                  >
+                    <div className="relative">
+                      <Camera size={20} />
+                      {getCropPhotos(crop.id).length > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                          {getCropPhotos(crop.id).length}
+                        </span>
+                      )}
+                    </div>
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => openCamera(crop.id)}
+                    className="p-2 bg-green-100 text-green-600 rounded-full hover:bg-green-200 transition-colors"
+                    title="Take Photo"
+                  >
+                    <Camera size={20} />
+                  </motion.button>
+                </div>
+              </div>
               
               {/* Crop Health Status */}
               <div className="mb-4 p-4 bg-white rounded-xl">
@@ -712,6 +844,176 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
                   )}
                 </motion.button>
               </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Camera Modal */}
+      <AnimatePresence>
+        {showCamera && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black z-50 flex flex-col"
+          >
+            {/* Camera Header */}
+            <div className="flex justify-between items-center p-4 bg-black/80">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={closeCamera}
+                className="p-2 rounded-full bg-cream text-black"
+              >
+                <X size={20} />
+              </motion.button>
+              <h2 className="text-white font-semibold">Take Crop Photo</h2>
+              <div className="w-10" />
+            </div>
+
+            {/* Camera View */}
+            <div className="flex-1 relative">
+              <video
+                id="crop-camera-video"
+                autoPlay
+                playsInline
+                muted
+                className="w-full h-full object-cover"
+              />
+              
+              {/* Camera Overlay */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-64 h-64 border-4 border-white/50 rounded-3xl"></div>
+              </div>
+              
+              {/* Photo Count Indicator */}
+              {selectedCropForPhoto && (
+                <div className="absolute top-4 left-4 bg-black/60 text-white px-3 py-2 rounded-full text-sm">
+                  Photos: {getCropPhotos(selectedCropForPhoto).length}
+                </div>
+              )}
+            </div>
+
+            {/* Camera Controls */}
+            <div className="p-6 bg-black/80 flex justify-center">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={capturePhoto}
+                className="w-20 h-20 bg-cream rounded-full flex items-center justify-center shadow-lg border-4 border-white"
+              >
+                <div className="w-16 h-16 bg-black rounded-full flex items-center justify-center">
+                  <Camera size={24} className="text-white" />
+                </div>
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Photo Gallery Modal */}
+      <AnimatePresence>
+        {showPhotoGallery && selectedPhotoGallery && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/90 z-50 flex flex-col"
+          >
+            {/* Gallery Header */}
+            <div className="flex justify-between items-center p-4 bg-black/80">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  setShowPhotoGallery(false);
+                  setSelectedPhotoGallery(null);
+                }}
+                className="p-2 rounded-full bg-cream text-black"
+              >
+                <X size={20} />
+              </motion.button>
+              <h2 className="text-white font-semibold">
+                {crops.find(c => c.id === selectedPhotoGallery)?.name} Photos
+              </h2>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  setShowPhotoGallery(false);
+                  openCamera(selectedPhotoGallery);
+                }}
+                className="p-2 rounded-full bg-green-500 text-white"
+              >
+                <Camera size={20} />
+              </motion.button>
+            </div>
+
+            {/* Photo Grid */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {getCropPhotos(selectedPhotoGallery).length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-white">
+                  <Camera size={64} className="mb-4 opacity-50" />
+                  <p className="text-xl mb-2">No photos yet</p>
+                  <p className="text-gray-400 text-center mb-6">
+                    Start documenting your crop's growth by taking photos
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => {
+                      setShowPhotoGallery(false);
+                      openCamera(selectedPhotoGallery);
+                    }}
+                    className="bg-green-500 text-white px-6 py-3 rounded-full flex items-center space-x-2"
+                  >
+                    <Camera size={20} />
+                    <span>Take First Photo</span>
+                  </motion.button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-4">
+                  {getCropPhotos(selectedPhotoGallery).map((photo, index) => (
+                    <motion.div
+                      key={photo.id}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="bg-white rounded-2xl overflow-hidden"
+                    >
+                      <div className="aspect-square relative">
+                        <img
+                          src={photo.imageUrl}
+                          alt={`Crop photo ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute top-2 right-2">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => downloadPhoto(photo)}
+                            className="p-2 bg-black/60 text-white rounded-full"
+                          >
+                            <Download size={16} />
+                          </motion.button>
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <p className="text-black text-sm font-semibold">
+                          {new Date(photo.dateTaken).toLocaleDateString()}
+                        </p>
+                        <p className="text-gray-600 text-xs">
+                          {new Date(photo.dateTaken).toLocaleTimeString()}
+                        </p>
+                        {photo.notes && (
+                          <p className="text-gray-700 text-xs mt-1">{photo.notes}</p>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
         )}
