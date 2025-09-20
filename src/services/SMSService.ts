@@ -16,7 +16,7 @@ class SMSService {
   private static instance: SMSService;
   private readonly targetPhoneNumber = '8074341795'; // Target phone number
   private readonly apiEndpoint = 'https://api.textlocal.in/send/'; // Example SMS API
-  private readonly apiKey = process.env.VITE_SMS_API_KEY || 'demo_key';
+  private readonly apiKey = import.meta.env.VITE_SMS_API_KEY || 'demo_key';
 
   private constructor() {}
 
