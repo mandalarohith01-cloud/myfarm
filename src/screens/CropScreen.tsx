@@ -34,6 +34,7 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
   const { t } = useLanguage();
   const [showAddForm, setShowAddForm] = useState(false);
   const [isGeneratingTodos, setIsGeneratingTodos] = useState(false);
+  const [showRecommendedCrops, setShowRecommendedCrops] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -61,6 +62,21 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
       ]
     }
   ]);
+  
+  // Load recommended crops from registration
+  React.useEffect(() => {
+    const recommendedCrops = localStorage.getItem('recommended_crops');
+    const soilAnalysis = localStorage.getItem('soil_analysis');
+    
+    if (recommendedCrops && soilAnalysis) {
+      const crops = JSON.parse(recommendedCrops);
+      const analysis = JSON.parse(soilAnalysis);
+      
+      if (crops.length > 0) {
+        setShowRecommendedCrops(true);
+      }
+    }
+  }, []);</parameter>
 
   const cropOptions = [
     { value: 'paddy', label: t('paddy') },
@@ -227,6 +243,43 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
     setShowAddForm(false);
     setIsGeneratingTodos(false);
   };
+  
+  const addRecommendedCrop = async (cropName: string) => {
+    const recommendedCrops = JSON.parse(localStorage.getItem('recommended_crops') || '[]');
+    const soilAnalysis = JSON.parse(localStorage.getItem('soil_analysis') || '{}');
+    
+    const cropData = recommendedCrops.find((crop: any) => crop.name === cropName);
+    if (!cropData) return;
+    
+    setIsGeneratingTodos(true);
+    
+    // Generate AI todos based on recommended crop
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    const aiTodos = generateAITodos(cropData.name, cropData.variety, 'kharif');
+    
+    const newCrop: Crop = {
+      id: Date.now(),
+      name: cropData.name,
+      variety: cropData.variety,
+      season: 'Kharif (Monsoon)',
+      sowingDate: cropData.sowingDate,
+      area: '1 acre', // Default area
+      health: 100,
+      lastHealthUpdate: new Date().toISOString(),
+      todos: aiTodos,
+    };
+    
+    setCrops(prev => [...prev, newCrop]);
+    setIsGeneratingTodos(false);
+    
+    // Remove from recommended crops
+    const updatedRecommended = recommendedCrops.filter((crop: any) => crop.name !== cropName);
+    localStorage.setItem('recommended_crops', JSON.stringify(updatedRecommended));
+    
+    if (updatedRecommended.length === 0) {
+      setShowRecommendedCrops(false);
+    }
+  };</parameter>
 
   const toggleTodo = (cropId: number, todoId: number) => {
     const crop = crops.find(c => c.id === cropId);
@@ -321,6 +374,55 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
 
       {/* Crop Cards */}
       <div className="space-y-6 mb-6">
+        {/* Recommended Crops Section */}
+        {showRecommendedCrops && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl p-6 mb-6"
+          >
+            <div className="flex items-center space-x-3 mb-4">
+              <Sparkles size={24} className="text-white" />
+              <h2 className="text-xl font-bold text-white">AI Recommended Crops</h2>
+            </div>
+            <p className="text-white/90 text-sm mb-4">
+              Based on your soil analysis, these crops are perfect for your land. Add them to start growing!
+            </p>
+            
+            <div className="space-y-3">
+              {JSON.parse(localStorage.getItem('recommended_crops') || '[]').map((crop: any, index: number) => (
+                <motion.div
+                  key={crop.name}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 flex items-center justify-between"
+                >
+                  <div className="flex-1">
+                    <h3 className="text-white font-bold">{crop.name}</h3>
+                    <p className="text-white/80 text-sm">{crop.variety}</p>
+                    <div className="flex items-center space-x-2 mt-1">
+                      <span className="text-xs bg-green-500 text-white px-2 py-1 rounded-full">
+                        {crop.suitability}% match
+                      </span>
+                      <span className="text-white/70 text-xs">{crop.expectedYield}</span>
+                    </div>
+                  </div>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => addRecommendedCrop(crop.name)}
+                    disabled={isGeneratingTodos}
+                    className="bg-white text-purple-600 px-4 py-2 rounded-xl font-semibold text-sm hover:bg-gray-100 transition-colors disabled:opacity-50"
+                  >
+                    {isGeneratingTodos ? 'Adding...' : 'Add Crop'}
+                  </motion.button>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+        
         {crops.map((crop, cropIndex) => (
           <motion.div
             key={crop.id}

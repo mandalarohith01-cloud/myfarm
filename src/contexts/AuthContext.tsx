@@ -25,6 +25,8 @@ interface SignupData {
   firstName: string;
   lastName: string;
   mobile: string;
+  recommendedCrops?: string[];
+  soilAnalysis?: any;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -194,6 +196,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             firstName: userData.firstName,
             lastName: userData.lastName,
             mobile: userData.mobile,
+            recommendedCrops: userData.recommendedCrops || [],
+            soilAnalysis: userData.soilAnalysis,
             createdAt: new Date().toISOString()
           };
           const mockToken = 'demo-token-' + Date.now();
@@ -202,6 +206,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           setToken(mockToken);
           localStorage.setItem('auth_token', mockToken);
           localStorage.setItem('auth_user', JSON.stringify(mockUser));
+          
+          // Store recommended crops for later use in crop section
+          if (userData.recommendedCrops && userData.recommendedCrops.length > 0) {
+            localStorage.setItem('recommended_crops', JSON.stringify(userData.recommendedCrops));
+            localStorage.setItem('soil_analysis', JSON.stringify(userData.soilAnalysis));
+          }
+          
           return true;
         } else {
           setError('Please fill in all required fields');
