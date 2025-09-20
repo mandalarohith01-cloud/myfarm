@@ -614,19 +614,18 @@ const AuthScreen: React.FC = () => {
                       <span className="font-semibold">Organic Matter:</span> {aiAdvisorResponse?.soilAnalysis.organicMatter}
                     </div>
                   </div>
-                </div>
-                
-                <div className="bg-blue-100 p-4 rounded-2xl">
-                  <h4 className="font-bold text-black mb-2">🤖 What our AI Agricultural Advisor analyzes:</h4>
-                  <ul className="text-black text-sm space-y-1">
-                    <li>• Comprehensive soil health assessment</li>
-                    <li>• Climate and weather pattern analysis</li>
-                    <li>• Crop suitability analysis</li>
-                    <li>• Profitability projections</li>
-                    <li>• Market demand forecasting</li>
-                    <li>• Risk assessment</li>
-                    <li>• Sustainable farming recommendations</li>
-                  </ul>
+                  
+                  <div className="bg-blue-100 p-4 rounded-2xl">
+                    <h4 className="font-bold text-black mb-2">🤖 What our AI Agricultural Advisor analyzes:</h4>
+                    <ul className="text-black text-sm space-y-1">
+                      <li>• Comprehensive soil health assessment</li>
+                      <li>• Crop suitability analysis</li>
+                      <li>• Profitability projections</li>
+                      <li>• Market demand analysis</li>
+                      <li>• Risk assessment</li>
+                      <li>• Seasonal recommendations</li>
+                    </ul>
+                  </div>
                 </div>
                 
                 {/* Overall Assessment */}
