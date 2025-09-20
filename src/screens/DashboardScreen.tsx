@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Bell, Languages, Wheat, Cloud, Bug, TrendingUp, User, FileText, Banknote, Bot, UserCircle } from 'lucide-react';
-import { Bell, Languages, Wheat, Cloud, Bug, TrendingUp, User, FileText, Banknote, Bot, UserCircle, Calendar } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import LanguageSelector from '../components/LanguageSelector';
@@ -34,12 +33,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, userProfi
       icon: Wheat,
       color: 'from-green-400 to-green-600',
       screen: 'crop' as Screen,
-    },
-    {
-      title: t('weeklyMonitoring'),
-      icon: Calendar,
-      color: 'from-indigo-400 to-indigo-600',
-      screen: 'monitoring' as Screen,
     },
     {
       title: t('weather'),
