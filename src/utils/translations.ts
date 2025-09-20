@@ -280,6 +280,11 @@ const translations: Record<Language, Record<string, string>> = {
     crop: 'Crop',
     todoList: 'To-Do List',
     addCrop: 'Add Crop',
+    location: 'Location',
+    soilType: 'Soil Type',
+    irrigationType: 'Irrigation Type',
+    expectedHarvest: 'Expected Harvest',
+    notes: 'Notes',
     water: 'Water the field (7am-9am)',
     sprayFertilizer: 'Apply fertilizer spray',
     monitorField: 'Monitor field for pests',
@@ -598,6 +603,11 @@ const translations: Record<Language, Record<string, string>> = {
     crop: 'फसल',
     todoList: 'कार्य सूची',
     addCrop: 'फसल जोड़ें',
+    location: 'स्थान',
+    soilType: 'मिट्टी का प्रकार',
+    irrigationType: 'सिंचाई का प्रकार',
+    expectedHarvest: 'अपेक्षित फसल',
+    notes: 'टिप्पणियां',
     water: 'खेत में पानी दें (सुबह 7-9 बजे)',
     sprayFertilizer: 'उर्वरक स्प्रे करें',
     monitorField: 'कीटों के लिए खेत की निगरानी करें',
@@ -916,6 +926,11 @@ const translations: Record<Language, Record<string, string>> = {
     crop: 'పంట',
     todoList: 'చేయవలసిన పనుల జాబితా',
     addCrop: 'పంట జోడించండి',
+    location: 'స్థానం',
+    soilType: 'మట్టి రకం',
+    irrigationType: 'నీటిపారుదల రకం',
+    expectedHarvest: 'ఆశించిన పంట',
+    notes: 'గమనికలు',
     water: 'పొలానికి నీరు పెట్టండి (ఉదయం 7-9 గంటలు)',
     sprayFertilizer: 'ఎరువుల స్ప్రే చేయండి',
     monitorField: 'కీటకాల కోసం పొలాన్ని పర్యవేక్షించండి',
@@ -1234,6 +1249,11 @@ const translations: Record<Language, Record<string, string>> = {
     crop: 'பயிர்',
     todoList: 'செய்ய வேண்டிய பட்டியல்',
     addCrop: 'பயிர் சேர்க்கவும்',
+    location: 'இடம்',
+    soilType: 'மண் வகை',
+    irrigationType: 'நீர்ப்பாசன வகை',
+    expectedHarvest: 'எதிர்பார்க்கப்படும் அறுவடை',
+    notes: 'குறிப்புகள்',
     water: 'வயலுக்கு தண்ணீர் பாய்ச்சவும் (காலை 7-9 மணி)',
     sprayFertilizer: 'உரம் தெளிக்கவும்',
     monitorField: 'பூச்சிகளுக்காக வயலை கண்காணிக்கவும்',
@@ -1327,7 +1347,22 @@ const translations: Record<Language, Record<string, string>> = {
     potato: 'ਆਲੂ',
     mango: 'ਅੰਬ',
     banana: 'ਕੇਲਾ',
-    apple: 'ਸੇਬ'
+    apple: 'ਸੇਬ',
+    // Crop Management
+    cropName: 'ਫਸਲ ਦਾ ਨਾਮ',
+    addCrop: 'ਫਸਲ ਜੋੜੋ',
+    variety: 'ਕਿਸਮ',
+    season: 'ਮੌਸਮ',
+    sowingDate: 'ਬੀਜਣ ਦੀ ਤਾਰੀਖ',
+    area: 'ਖੇਤਰ',
+    location: 'ਸਥਾਨ',
+    soilType: 'ਮਿੱਟੀ ਦੀ ਕਿਸਮ',
+    irrigationType: 'ਸਿੰਚਾਈ ਦੀ ਕਿਸਮ',
+    expectedHarvest: 'ਅਪੇਖਿਤ ਫਸਲ',
+    notes: 'ਨੋਟਸ',
+    todoList: 'ਕਰਨ ਵਾਲੇ ਕੰਮ',
+    water: 'ਫਸਲਾਂ ਨੂੰ ਪਾਣੀ ਦਿਓ',
+    sprayFertilizer: 'ਖਾਦ ਛਿੜਕੋ'
   },
   
   bn: {
@@ -1370,7 +1405,22 @@ const translations: Record<Language, Record<string, string>> = {
     potato: 'আলু',
     mango: 'আম',
     banana: 'কলা',
-    apple: 'আপেল'
+    apple: 'আপেল',
+    // Crop Management
+    cropName: 'ফসলের নাম',
+    addCrop: 'ফসল যোগ করুন',
+    variety: 'জাত',
+    season: 'মৌসুম',
+    sowingDate: 'বপনের তারিখ',
+    area: 'এলাকা',
+    location: 'অবস্থান',
+    soilType: 'মাটির ধরন',
+    irrigationType: 'সেচের ধরন',
+    expectedHarvest: 'প্রত্যাশিত ফসল',
+    notes: 'নোট',
+    todoList: 'করণীয় তালিকা',
+    water: 'ফসলে পানি দিন',
+    sprayFertilizer: 'সার স্প্রে করুন'
   },
   
   gu: {
@@ -1413,7 +1463,22 @@ const translations: Record<Language, Record<string, string>> = {
     potato: 'બટાકા',
     mango: 'કેરી',
     banana: 'કેળા',
-    apple: 'સફરજન'
+    apple: 'સફરજન',
+    // Crop Management
+    cropName: 'પાકનું નામ',
+    addCrop: 'પાક ઉમેરો',
+    variety: 'જાત',
+    season: 'મોસમ',
+    sowingDate: 'વાવણીની તારીખ',
+    area: 'વિસ્તાર',
+    location: 'સ્થાન',
+    soilType: 'માટીનો પ્રકાર',
+    irrigationType: 'સિંચાઈનો પ્રકાર',
+    expectedHarvest: 'અપેક્ષિત લણણી',
+    notes: 'નોંધો',
+    todoList: 'કરવાની યાદી',
+    water: 'પાકને પાણી આપો',
+    sprayFertilizer: 'ખાતર છાંટો'
   },
   
   mr: {
@@ -1456,7 +1521,22 @@ const translations: Record<Language, Record<string, string>> = {
     potato: 'बटाटा',
     mango: 'आंबा',
     banana: 'केळी',
-    apple: 'सफरचंद'
+    apple: 'सफरचंद',
+    // Crop Management
+    cropName: 'पिकाचे नाव',
+    addCrop: 'पीक जोडा',
+    variety: 'जात',
+    season: 'हंगाम',
+    sowingDate: 'पेरणीची तारीख',
+    area: 'क्षेत्र',
+    location: 'स्थान',
+    soilType: 'मातीचा प्रकार',
+    irrigationType: 'सिंचनाचा प्रकार',
+    expectedHarvest: 'अपेक्षित कापणी',
+    notes: 'टिप्पण्या',
+    todoList: 'करण्याची यादी',
+    water: 'पिकांना पाणी द्या',
+    sprayFertilizer: 'खत फवारा'
   },
   
   kn: {
@@ -1499,7 +1579,22 @@ const translations: Record<Language, Record<string, string>> = {
     potato: 'ಆಲೂಗಡ್ಡೆ',
     mango: 'ಮಾವಿನಹಣ್ಣು',
     banana: 'ಬಾಳೆಹಣ್ಣು',
-    apple: 'ಸೇಬು'
+    apple: 'ಸೇಬು',
+    // Crop Management
+    cropName: 'ಬೆಳೆಯ ಹೆಸರು',
+    addCrop: 'ಬೆಳೆ ಸೇರಿಸಿ',
+    variety: 'ಪ್ರಭೇದ',
+    season: 'ಋತು',
+    sowingDate: 'ಬಿತ್ತನೆ ದಿನಾಂಕ',
+    area: 'ಪ್ರದೇಶ',
+    location: 'ಸ್ಥಳ',
+    soilType: 'ಮಣ್ಣಿನ ಪ್ರಕಾರ',
+    irrigationType: 'ನೀರಾವರಿ ಪ್ರಕಾರ',
+    expectedHarvest: 'ನಿರೀಕ್ಷಿತ ಸುಗ್ಗಿ',
+    notes: 'ಟಿಪ್ಪಣಿಗಳು',
+    todoList: 'ಮಾಡಬೇಕಾದ ಪಟ್ಟಿ',
+    water: 'ಬೆಳೆಗಳಿಗೆ ನೀರು ಕೊಡಿ',
+    sprayFertilizer: 'ಗೊಬ್ಬರ ಸಿಂಪಡಿಸಿ'
   },
   
   ml: {
@@ -1542,7 +1637,22 @@ const translations: Record<Language, Record<string, string>> = {
     potato: 'ഉരുളക്കിഴങ്ങ്',
     mango: 'മാങ്ങ',
     banana: 'വാഴപ്പഴം',
-    apple: 'ആപ്പിൾ'
+    apple: 'ആപ്പിൾ',
+    // Crop Management
+    cropName: 'വിളയുടെ പേര്',
+    addCrop: 'വിള ചേർക്കുക',
+    variety: 'ഇനം',
+    season: 'സീസൺ',
+    sowingDate: 'വിതയ്ക്കുന്ന തീയതി',
+    area: 'പ്രദേശം',
+    location: 'സ്ഥലം',
+    soilType: 'മണ്ണിന്റെ തരം',
+    irrigationType: 'ജലസേചന തരം',
+    expectedHarvest: 'പ്രതീക്ഷിക്കുന്ന വിളവെടുപ്പ്',
+    notes: 'കുറിപ്പുകൾ',
+    todoList: 'ചെയ്യേണ്ട പട്ടിക',
+    water: 'വിളകൾക്ക് വെള്ളം കൊടുക്കുക',
+    sprayFertilizer: 'വളം തളിക്കുക'
   }
 };
 
