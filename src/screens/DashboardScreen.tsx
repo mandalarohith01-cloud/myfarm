@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Bell, Languages, Wheat, Cloud, Bug, TrendingUp, User, FileText, Banknote, Bot, UserCircle } from 'lucide-react';
 import { Bell, Languages, Wheat, Cloud, Bug, TrendingUp, User, FileText, Banknote, Bot, UserCircle, Calendar } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotifications } from '../contexts/NotificationContext';
