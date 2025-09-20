@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { CropProvider } from './contexts/CropContext';
 import AuthScreen from './screens/AuthScreen';
 import RegistrationScreen from './screens/RegistrationScreen';
 import DashboardScreen from './screens/DashboardScreen';
@@ -13,9 +14,8 @@ import MarketScreen from './screens/MarketScreen';
 import GovernmentSchemesScreen from './screens/GovernmentSchemesScreen';
 import BankLoansScreen from './screens/BankLoansScreen';
 import ProfileScreen from './screens/ProfileScreen';
-import WeeklyMonitoringScreen from './screens/WeeklyMonitoringScreen';
 
-export type Screen = 'registration' | 'dashboard' | 'crop' | 'monitoring' | 'weather' | 'pest' | 'market' | 'schemes' | 'loans' | 'profile';
+export type Screen = 'registration' | 'dashboard' | 'crop' | 'weather' | 'pest' | 'market' | 'schemes' | 'loans' | 'profile';
 
 const AppContent: React.FC = () => {
   const { user, isLoading } = useAuth();
@@ -53,8 +53,6 @@ const AppContent: React.FC = () => {
         return <DashboardScreen onNavigate={navigateTo} userProfile={userProfile} />;
       case 'crop':
         return <CropScreen onBack={() => navigateTo('dashboard')} />;
-      case 'monitoring':
-        return <WeeklyMonitoringScreen onBack={() => navigateTo('dashboard')} />;
       case 'weather':
         return <WeatherScreen onBack={() => navigateTo('dashboard')} />;
       case 'pest':
@@ -87,11 +85,13 @@ function App() {
 
   return (
     <AuthProvider>
-      <NotificationProvider>
-        <LanguageProvider>
-          <AppContent />
-        </LanguageProvider>
-      </NotificationProvider>
+      <CropProvider>
+        <NotificationProvider>
+          <LanguageProvider>
+            <AppContent />
+          </LanguageProvider>
+        </NotificationProvider>
+      </CropProvider>
     </AuthProvider>
   );
 }
