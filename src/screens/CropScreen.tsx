@@ -279,7 +279,7 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
     if (updatedRecommended.length === 0) {
       setShowRecommendedCrops(false);
     }
-  };</parameter>
+  };
 
   const toggleTodo = (cropId: number, todoId: number) => {
     const crop = crops.find(c => c.id === cropId);
