@@ -13,9 +13,8 @@ import MarketScreen from './screens/MarketScreen';
 import GovernmentSchemesScreen from './screens/GovernmentSchemesScreen';
 import BankLoansScreen from './screens/BankLoansScreen';
 import ProfileScreen from './screens/ProfileScreen';
-import WeeklyMonitoringScreen from './screens/WeeklyMonitoringScreen';
 
-export type Screen = 'registration' | 'dashboard' | 'crop' | 'monitoring' | 'weather' | 'pest' | 'market' | 'schemes' | 'loans' | 'profile';
+export type Screen = 'registration' | 'dashboard' | 'crop' | 'weather' | 'pest' | 'market' | 'schemes' | 'loans' | 'profile';
 
 const AppContent: React.FC = () => {
   const { user, isLoading } = useAuth();
@@ -53,8 +52,6 @@ const AppContent: React.FC = () => {
         return <DashboardScreen onNavigate={navigateTo} userProfile={userProfile} />;
       case 'crop':
         return <CropScreen onBack={() => navigateTo('dashboard')} />;
-      case 'monitoring':
-        return <WeeklyMonitoringScreen onBack={() => navigateTo('dashboard')} />;
       case 'weather':
         return <WeatherScreen onBack={() => navigateTo('dashboard')} />;
       case 'pest':

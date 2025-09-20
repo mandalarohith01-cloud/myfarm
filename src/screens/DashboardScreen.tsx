@@ -1,13 +1,15 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Bell, Languages, Wheat, Cloud, Bug, TrendingUp, User, FileText, Banknote, Bot, UserCircle } from 'lucide-react';
-import { Bell, Languages, Wheat, Cloud, Bug, TrendingUp, User, FileText, Banknote, Bot, UserCircle, Calendar } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useNotifications } from '../contexts/NotificationContext';
 import LanguageSelector from '../components/LanguageSelector';
 import NotificationPanel from '../components/NotificationPanel';
 import AIAssistant from '../components/AIAssistant';
+import SMSNotificationStatus from '../components/SMSNotificationStatus';
 import { useRealTimeNotifications } from '../hooks/useRealTimeNotifications';
+import { useRealTimeSMS } from '../hooks/useRealTimeSMS';
 import type { Screen } from '../App';
 
 interface DashboardScreenProps {
@@ -20,9 +22,17 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, userProfi
   const { unreadCount } = useNotifications();
   const [showNotifications, setShowNotifications] = React.useState(false);
   const [showAIAssistant, setShowAIAssistant] = React.useState(false);
+  const [showSMSStatus, setShowSMSStatus] = React.useState(false);
   
   // Enable real-time notifications
   useRealTimeNotifications([
+    { name: 'Paddy' },
+    { name: 'Tomato' },
+    { name: 'Wheat' }
+  ], 'Hyderabad');
+  
+  // Enable real-time SMS notifications to 8074341795
+  useRealTimeSMS([
     { name: 'Paddy' },
     { name: 'Tomato' },
     { name: 'Wheat' }
@@ -34,12 +44,6 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, userProfi
       icon: Wheat,
       color: 'from-green-400 to-green-600',
       screen: 'crop' as Screen,
-    },
-    {
-      title: t('weeklyMonitoring'),
-      icon: Calendar,
-      color: 'from-indigo-400 to-indigo-600',
-      screen: 'monitoring' as Screen,
     },
     {
       title: t('weather'),
@@ -165,6 +169,29 @@ const DashboardScreen: React.FC<DashboardScreenProps> = ({ onNavigate, userProfi
         isOpen={showAIAssistant} 
         onClose={() => setShowAIAssistant(false)} 
       />
+      
+      {/* SMS Status Panel */}
+      <SMSNotificationStatus 
+        isVisible={showSMSStatus} 
+        onClose={() => setShowSMSStatus(false)} 
+      />
+      
+      {/* SMS Status Button */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.8, type: "spring", stiffness: 260, damping: 20 }}
+        className="fixed bottom-32 right-8"
+      >
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setShowSMSStatus(true)}
+          className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg"
+        >
+          <MessageSquare size={28} className="text-white" />
+        </motion.button>
+      </motion.div>
       
       {/* AI Bot Button */}
       <motion.div
