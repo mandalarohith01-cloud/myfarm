@@ -1,35 +1,20 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Plus, Check, User, ChevronDown, Calendar, MapPin, Sparkles } from 'lucide-react';
+import { ArrowLeft, Plus, Check, User, ChevronDown, Calendar, MapPin, Sparkles, Trash2, Edit3, BarChart3 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useCrops, Crop, TodoItem } from '../contexts/CropContext';
 import AIService from '../services/AIService';
 
 interface CropScreenProps {
   onBack: () => void;
 }
 
-interface Crop {
-  id: number;
-  name: string;
-  variety: string;
-  season: string;
-  sowingDate: string;
-  area: string;
-  todos: TodoItem[];
-}
-
-interface TodoItem {
-  id: number;
-  text: string;
-  completed: boolean;
-  priority: 'high' | 'medium' | 'low';
-  dueDate?: string;
-}
-
 const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
   const { t } = useLanguage();
+  const { crops, addCrop, toggleTodo, deleteCrop, updateCrop, isLoading } = useCrops();
   const [showAddForm, setShowAddForm] = useState(false);
   const [isGeneratingTodos, setIsGeneratingTodos] = useState(false);
+  const [editingCrop, setEditingCrop] = useState<number | null>(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -37,24 +22,13 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
     variety: '',
     season: '',
     sowingDate: '',
-    area: ''
+    area: '',
+    location: '',
+    soilType: '',
+    irrigationType: '',
+    expectedHarvest: '',
+    notes: ''
   });
-
-  const [crops, setCrops] = useState<Crop[]>([
-    {
-      id: 1,
-      name: t('paddy'),
-      variety: t('sonamasuri'),
-      season: t('kharifRabi'),
-      sowingDate: '15-July-2025',
-      area: '2 ' + t('acres'),
-      todos: [
-        { id: 1, text: t('water'), completed: false, priority: 'high', dueDate: '7am-9am' },
-        { id: 2, text: t('sprayFertilizer'), completed: false, priority: 'medium' },
-        { id: 3, text: t('monitorField'), completed: false, priority: 'low' },
-      ]
-    }
-  ]);
 
   const cropOptions = [
     { value: 'paddy', label: t('paddy') },
@@ -79,6 +53,24 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
     { value: 'rabi', label: 'Rabi (Winter)' },
     { value: 'zaid', label: 'Zaid (Summer)' },
     { value: 'perennial', label: 'Perennial' },
+  ];
+
+  const soilTypeOptions = [
+    'Alluvial Soil',
+    'Black Cotton Soil', 
+    'Red Soil',
+    'Laterite Soil',
+    'Sandy Soil',
+    'Clay Soil',
+    'Loamy Soil'
+  ];
+
+  const irrigationOptions = [
+    'Drip Irrigation',
+    'Sprinkler Irrigation',
+    'Flood Irrigation', 
+    'Furrow Irrigation',
+    'Rain-fed'
   ];
 
   const generateAITodos = (cropName: string, variety: string, season: string) => {
@@ -140,6 +132,7 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
 
   const handleAddCrop = async () => {
     if (!formData.cropName || !formData.variety || !formData.season || !formData.sowingDate || !formData.area) {
+      alert('Please fill in all required fields: Crop Name, Variety, Season, Sowing Date, and Area');
       return;
     }
 
@@ -150,33 +143,39 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
     
     const aiTodos = generateAITodos(formData.cropName, formData.variety, formData.season);
     
-    const newCrop: Crop = {
-      id: Date.now(),
+    const newCropData = {
       name: formData.cropName,
       variety: formData.variety,
       season: formData.season,
       sowingDate: formData.sowingDate,
       area: formData.area,
+      location: formData.location,
+      soilType: formData.soilType,
+      irrigationType: formData.irrigationType,
+      expectedHarvest: formData.expectedHarvest,
+      notes: formData.notes,
       todos: aiTodos,
     };
 
-    setCrops([...crops, newCrop]);
-    setFormData({ cropName: '', variety: '', season: '', sowingDate: '', area: '' });
+    addCrop(newCropData);
+    
+    // Show success message
+    alert(`${formData.cropName} crop added successfully with AI recommendations!`);
+    
+    setFormData({ 
+      cropName: '', variety: '', season: '', sowingDate: '', area: '',
+      location: '', soilType: '', irrigationType: '', expectedHarvest: '', notes: ''
+    });
     setShowAddForm(false);
     setIsGeneratingTodos(false);
   };
 
-  const toggleTodo = (cropId: number, todoId: number) => {
-    setCrops(crops.map(crop => 
-      crop.id === cropId 
-        ? {
-            ...crop,
-            todos: crop.todos.map(todo => 
-              todo.id === todoId ? { ...todo, completed: !todo.completed } : todo
-            )
-          }
-        : crop
-    ));
+  const handleDeleteCrop = (cropId: number) => {
+    const cropToDelete = crops.find(crop => crop.id === cropId);
+    if (window.confirm(`Are you sure you want to delete "${cropToDelete?.name}" crop? This action cannot be undone.`)) {
+      deleteCrop(cropId);
+      alert('Crop deleted successfully!');
+    }
   };
 
   const getPriorityColor = (priority: string) => {
@@ -187,6 +186,14 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
       default: return 'text-gray-600 bg-gray-100';
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-white text-xl">Loading your crops...</div>
+      </div>
+    );
+  }
 
   return (
     <motion.div
@@ -225,14 +232,58 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
             className="bg-cream rounded-3xl p-6"
           >
             {/* Crop Info */}
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-black mb-4">{crop.name} - {t('crop')} {cropIndex + 1}</h2>
+            <div className="mb-6 relative">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-black">{crop.name} - {t('crop')} {cropIndex + 1}</h2>
+                <div className="flex items-center space-x-2">
+                  {/* Progress Bar */}
+                  <div className="flex items-center space-x-2">
+                    <BarChart3 size={16} className="text-blue-600" />
+                    <span className="text-sm font-semibold text-blue-600">{crop.progress}%</span>
+                  </div>
+                  <div className="w-16 h-2 bg-gray-200 rounded-full">
+                    <div 
+                      className="h-2 bg-green-500 rounded-full transition-all duration-300"
+                      style={{ width: `${crop.progress}%` }}
+                    />
+                  </div>
+                  {/* Action Buttons */}
+                  <button
+                    onClick={() => setEditingCrop(crop.id)}
+                    className="p-2 text-blue-600 hover:bg-blue-100 rounded-full"
+                  >
+                    <Edit3 size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCrop(crop.id)}
+                    className="p-2 text-red-600 hover:bg-red-100 rounded-full"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-3 text-black text-sm">
                 <div><span className="font-semibold">{t('cropName')}:</span> {crop.name}</div>
                 <div><span className="font-semibold">{t('variety')}:</span> {crop.variety}</div>
                 <div><span className="font-semibold">{t('season')}:</span> {crop.season}</div>
                 <div><span className="font-semibold">{t('sowingDate')}:</span> {crop.sowingDate}</div>
-                <div className="col-span-2"><span className="font-semibold">{t('area')}:</span> {crop.area}</div>
+                <div><span className="font-semibold">{t('area')}:</span> {crop.area}</div>
+                {crop.location && <div><span className="font-semibold">Location:</span> {crop.location}</div>}
+                {crop.soilType && <div><span className="font-semibold">Soil Type:</span> {crop.soilType}</div>}
+                {crop.irrigationType && <div><span className="font-semibold">Irrigation:</span> {crop.irrigationType}</div>}
+                {crop.expectedHarvest && <div><span className="font-semibold">Expected Harvest:</span> {crop.expectedHarvest}</div>}
+                {crop.notes && <div className="col-span-2"><span className="font-semibold">Notes:</span> {crop.notes}</div>}
+              </div>
+              
+              {/* Status Badge */}
+              <div className="mt-3">
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                  crop.status === 'active' ? 'bg-green-100 text-green-800' :
+                  crop.status === 'harvested' ? 'bg-blue-100 text-blue-800' :
+                  'bg-red-100 text-red-800'
+                }`}>
+                  {crop.status.charAt(0).toUpperCase() + crop.status.slice(1)}
+                </span>
               </div>
             </div>
 
@@ -275,6 +326,11 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
                           <span className="text-xs text-gray-500 flex items-center">
                             <Calendar size={12} className="mr-1" />
                             {todo.dueDate}
+                          </span>
+                        )}
+                        {todo.completed && todo.completedAt && (
+                          <span className="text-xs text-green-600">
+                            ✓ Completed {new Date(todo.completedAt).toLocaleDateString()}
                           </span>
                         )}
                       </div>
@@ -360,6 +416,71 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
                   value={formData.sowingDate}
                   onChange={(e) => setFormData({ ...formData, sowingDate: e.target.value })}
                   className="w-full px-4 py-3 bg-white text-black rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">Location</label>
+                <input
+                  type="text"
+                  placeholder="Enter location"
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full px-4 py-3 bg-white text-black rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Soil Type */}
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">Soil Type</label>
+                <select
+                  value={formData.soilType}
+                  onChange={(e) => setFormData({ ...formData, soilType: e.target.value })}
+                  className="w-full px-4 py-3 bg-white text-black rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Select soil type</option>
+                  {soilTypeOptions.map(soil => (
+                    <option key={soil} value={soil}>{soil}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Irrigation Type */}
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">Irrigation Type</label>
+                <select
+                  value={formData.irrigationType}
+                  onChange={(e) => setFormData({ ...formData, irrigationType: e.target.value })}
+                  className="w-full px-4 py-3 bg-white text-black rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">Select irrigation type</option>
+                  {irrigationOptions.map(irrigation => (
+                    <option key={irrigation} value={irrigation}>{irrigation}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Expected Harvest Date */}
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">Expected Harvest Date</label>
+                <input
+                  type="date"
+                  value={formData.expectedHarvest}
+                  onChange={(e) => setFormData({ ...formData, expectedHarvest: e.target.value })}
+                  className="w-full px-4 py-3 bg-white text-black rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label className="block text-sm font-semibold text-black mb-2">Notes</label>
+                <textarea
+                  placeholder="Add any additional notes..."
+                  value={formData.notes}
+                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  rows={3}
+                  className="w-full px-4 py-3 bg-white text-black rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
                 />
               </div>
 

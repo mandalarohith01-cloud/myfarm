@@ -218,11 +218,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
+    console.log('User logging out, crops should be preserved in localStorage');
     setUser(null);
     setToken(null);
     setError(null);
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
+    // Note: We intentionally do NOT remove crop data on logout
+    // Crop data remains in localStorage with user-specific keys
   };
 
   return (
