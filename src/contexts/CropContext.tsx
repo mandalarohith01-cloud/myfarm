@@ -62,38 +62,52 @@ export const CropProvider: React.FC<CropProviderProps> = ({ children }) => {
   const { user } = useAuth();
   const [crops, setCrops] = useState<Crop[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
   // Load crops from localStorage when user changes
   useEffect(() => {
     if (user) {
       loadUserCrops(user.id);
+      setHasInitialized(true);
     } else {
       setCrops([]);
+      setHasInitialized(false);
     }
     setIsLoading(false);
   }, [user]);
 
   // Save crops to localStorage whenever crops change
   useEffect(() => {
-    if (user && crops.length >= 0) {
+    if (user && hasInitialized) {
       saveUserCrops(user.id, crops);
     }
-  }, [crops, user]);
+  }, [crops, user, hasInitialized]);
 
   const loadUserCrops = (userId: string) => {
     try {
       const savedCrops = localStorage.getItem(`farmar_crops_${userId}`);
       if (savedCrops) {
-        const parsedCrops = JSON.parse(savedCrops);
-        setCrops(parsedCrops.map((crop: any) => ({
+        const parsedCrops = JSON.parse(savedCrops).map((crop: any) => ({
           ...crop,
-          createdAt: new Date(crop.createdAt),
-          updatedAt: new Date(crop.updatedAt),
+          createdAt: typeof crop.createdAt === 'string' ? crop.createdAt : new Date(crop.createdAt).toISOString(),
+          updatedAt: typeof crop.updatedAt === 'string' ? crop.updatedAt : new Date(crop.updatedAt).toISOString(),
           todos: crop.todos.map((todo: any) => ({
             ...todo,
-            completedAt: todo.completedAt ? new Date(todo.completedAt) : undefined
+            completedAt: todo.completedAt ? 
+              (typeof todo.completedAt === 'string' ? todo.completedAt : new Date(todo.completedAt).toISOString()) 
+              : undefined
+          }))
+        }));
+        setCrops(parsedCrops.map((crop: any) => ({
+          ...crop,
+          createdAt: crop.createdAt,
+          updatedAt: crop.updatedAt,
+          todos: crop.todos.map((todo: any) => ({
+            ...todo,
+            completedAt: todo.completedAt
           }))
         })));
+        console.log(`Loaded ${parsedCrops.length} crops for user ${userId}`);
       } else {
         // Initialize with sample crop for new users
         const sampleCrop: Crop = {
@@ -145,6 +159,7 @@ export const CropProvider: React.FC<CropProviderProps> = ({ children }) => {
           progress: 15
         };
         setCrops([sampleCrop]);
+        console.log(`Initialized sample crop for new user ${userId}`);
       }
     } catch (error) {
       console.error('Error loading crops:', error);
@@ -155,6 +170,7 @@ export const CropProvider: React.FC<CropProviderProps> = ({ children }) => {
   const saveUserCrops = (userId: string, cropsToSave: Crop[]) => {
     try {
       localStorage.setItem(`farmar_crops_${userId}`, JSON.stringify(cropsToSave));
+      console.log(`Saved ${cropsToSave.length} crops for user ${userId}`);
     } catch (error) {
       console.error('Error saving crops:', error);
     }

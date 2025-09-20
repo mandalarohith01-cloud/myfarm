@@ -29,7 +29,11 @@ const AppContent: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-cream border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="text-white text-xl">Loading FARMAR...</div>
+          <div className="text-gray-400 text-sm mt-2">Preparing your farming dashboard</div>
+        </div>
       </div>
     );
   }

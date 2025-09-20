@@ -132,6 +132,7 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
 
   const handleAddCrop = async () => {
     if (!formData.cropName || !formData.variety || !formData.season || !formData.sowingDate || !formData.area) {
+      alert('Please fill in all required fields: Crop Name, Variety, Season, Sowing Date, and Area');
       return;
     }
 
@@ -157,6 +158,10 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
     };
 
     addCrop(newCropData);
+    
+    // Show success message
+    alert(`${formData.cropName} crop added successfully with AI recommendations!`);
+    
     setFormData({ 
       cropName: '', variety: '', season: '', sowingDate: '', area: '',
       location: '', soilType: '', irrigationType: '', expectedHarvest: '', notes: ''
@@ -166,8 +171,10 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
   };
 
   const handleDeleteCrop = (cropId: number) => {
-    if (window.confirm('Are you sure you want to delete this crop? This action cannot be undone.')) {
+    const cropToDelete = crops.find(crop => crop.id === cropId);
+    if (window.confirm(`Are you sure you want to delete "${cropToDelete?.name}" crop? This action cannot be undone.`)) {
       deleteCrop(cropId);
+      alert('Crop deleted successfully!');
     }
   };
 
