@@ -32,19 +32,8 @@ const AuthScreen: React.FC = () => {
     village: '',
     pincode: '',
     
-    // Soil Information
-    soilType: '',
-    soilPH: '',
-    soilMoisture: '',
-    soilFertility: '',
-    irrigationType: '',
-    waterSource: '',
+   
     
-    // Crop Information
-    primaryCrops: [],
-    secondaryCrops: [],
-    farmingMethod: '',
-    season: '',
     
     // Financial Information
     annualIncome: '',
@@ -266,18 +255,6 @@ const AuthScreen: React.FC = () => {
           >
             <h3 className="text-xl font-bold text-center mb-6 text-cream">Farm Details</h3>
             
-            {/* Farm Name */}
-            <div className="relative">
-              <Home size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600" />
-              <input
-                type="text"
-                placeholder="Farm Name"
-                value={formData.farmName}
-                onChange={(e) => handleInputChange('farmName', e.target.value)}
-                className="w-full pl-12 pr-6 py-4 bg-cream text-black rounded-2xl text-lg placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all"
-              />
-            </div>
-
             {/* Farmer Type */}
             <div className="relative">
               <User size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-600 z-10" />
