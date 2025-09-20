@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Plus, Check, User, ChevronDown, Calendar, MapPin, Sparkles } from 'lucide-react';
+import { ArrowLeft, Plus, Check, User, ChevronDown, Calendar, MapPin, Sparkles, CheckCircle } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import AIService from '../services/AIService';
 
@@ -15,6 +15,8 @@ interface Crop {
   season: string;
   sowingDate: string;
   area: string;
+  health: number; // 0-100 health percentage
+  lastHealthUpdate: string;
   todos: TodoItem[];
 }
 
@@ -24,6 +26,8 @@ interface TodoItem {
   completed: boolean;
   priority: 'high' | 'medium' | 'low';
   dueDate?: string;
+  completedAt?: string;
+  isOverdue?: boolean;
 }
 
 const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
@@ -48,10 +52,12 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
       season: t('kharifRabi'),
       sowingDate: '15-July-2025',
       area: '2 ' + t('acres'),
+      health: 85,
+      lastHealthUpdate: new Date().toISOString(),
       todos: [
-        { id: 1, text: t('water'), completed: false, priority: 'high', dueDate: '7am-9am' },
-        { id: 2, text: t('sprayFertilizer'), completed: false, priority: 'medium' },
-        { id: 3, text: t('monitorField'), completed: false, priority: 'low' },
+        { id: 1, text: t('water'), completed: false, priority: 'high', dueDate: '7am-9am', isOverdue: false },
+        { id: 2, text: t('sprayFertilizer'), completed: true, priority: 'medium', completedAt: new Date(Date.now() - 86400000).toISOString(), isOverdue: false },
+        { id: 3, text: t('monitorField'), completed: false, priority: 'low', isOverdue: true },
       ]
     }
   ]);
@@ -80,6 +86,60 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
     { value: 'zaid', label: 'Zaid (Summer)' },
     { value: 'perennial', label: 'Perennial' },
   ];
+
+  // Calculate crop health based on task completion
+  const calculateCropHealth = (todos: TodoItem[]): number => {
+    if (todos.length === 0) return 100;
+    
+    let healthScore = 100;
+    const totalTasks = todos.length;
+    const completedTasks = todos.filter(todo => todo.completed).length;
+    const overdueTasks = todos.filter(todo => todo.isOverdue && !todo.completed).length;
+    const highPriorityIncomplete = todos.filter(todo => !todo.completed && todo.priority === 'high').length;
+    const mediumPriorityIncomplete = todos.filter(todo => !todo.completed && todo.priority === 'medium').length;
+    
+    // Base health calculation
+    const completionRate = completedTasks / totalTasks;
+    healthScore = Math.round(completionRate * 100);
+    
+    // Penalties for incomplete tasks
+    healthScore -= (overdueTasks * 15); // -15 for each overdue task
+    healthScore -= (highPriorityIncomplete * 10); // -10 for each incomplete high priority
+    healthScore -= (mediumPriorityIncomplete * 5); // -5 for each incomplete medium priority
+    
+    // Bonus for completing high priority tasks
+    const completedHighPriority = todos.filter(todo => todo.completed && todo.priority === 'high').length;
+    healthScore += (completedHighPriority * 5);
+    
+    // Ensure health stays within 0-100 range
+    return Math.max(0, Math.min(100, healthScore));
+  };
+
+  // Get health status color and text
+  const getHealthStatus = (health: number) => {
+    if (health >= 90) return { color: 'text-green-600 bg-green-100', text: 'Excellent', icon: '🌟' };
+    if (health >= 75) return { color: 'text-green-600 bg-green-100', text: 'Good', icon: '✅' };
+    if (health >= 60) return { color: 'text-yellow-600 bg-yellow-100', text: 'Fair', icon: '⚠️' };
+    if (health >= 40) return { color: 'text-orange-600 bg-orange-100', text: 'Poor', icon: '🔶' };
+    return { color: 'text-red-600 bg-red-100', text: 'Critical', icon: '🚨' };
+  };
+
+  // Update crop health when todos change
+  const updateCropHealth = (cropId: number, updatedTodos: TodoItem[]) => {
+    const newHealth = calculateCropHealth(updatedTodos);
+    setCrops(prevCrops => 
+      prevCrops.map(crop => 
+        crop.id === cropId 
+          ? { 
+              ...crop, 
+              health: newHealth, 
+              lastHealthUpdate: new Date().toISOString(),
+              todos: updatedTodos 
+            }
+          : crop
+      )
+    );
+  };
 
   const generateAITodos = (cropName: string, variety: string, season: string) => {
     // Enhanced AI-based todo generation
@@ -157,6 +217,8 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
       season: formData.season,
       sowingDate: formData.sowingDate,
       area: formData.area,
+      health: 100, // New crops start with perfect health
+      lastHealthUpdate: new Date().toISOString(),
       todos: aiTodos,
     };
 
@@ -167,17 +229,60 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
   };
 
   const toggleTodo = (cropId: number, todoId: number) => {
-    setCrops(crops.map(crop => 
-      crop.id === cropId 
-        ? {
-            ...crop,
-            todos: crop.todos.map(todo => 
-              todo.id === todoId ? { ...todo, completed: !todo.completed } : todo
-            )
-          }
-        : crop
-    ));
+    const crop = crops.find(c => c.id === cropId);
+    if (!crop) return;
+    
+    const updatedTodos = crop.todos.map(todo => {
+      if (todo.id === todoId) {
+        const isCompleting = !todo.completed;
+        return { 
+          ...todo, 
+          completed: isCompleting,
+          completedAt: isCompleting ? new Date().toISOString() : undefined,
+          isOverdue: isCompleting ? false : todo.isOverdue
+        };
+      }
+      return todo;
+    });
+    
+    updateCropHealth(cropId, updatedTodos);
   };
+
+  // Check for overdue tasks periodically
+  React.useEffect(() => {
+    const checkOverdueTasks = () => {
+      const now = new Date();
+      const today = now.toDateString();
+      
+      setCrops(prevCrops => 
+        prevCrops.map(crop => {
+          const updatedTodos = crop.todos.map(todo => {
+            if (!todo.completed && todo.dueDate) {
+              // Simple overdue check - if task has a due date and it's not completed
+              const isOverdue = todo.dueDate.includes('am') || todo.dueDate.includes('pm') 
+                ? now.getHours() > 12 // Simple time check
+                : Math.random() > 0.7; // Random overdue for demo
+              
+              return { ...todo, isOverdue };
+            }
+            return todo;
+          });
+          
+          const newHealth = calculateCropHealth(updatedTodos);
+          return {
+            ...crop,
+            todos: updatedTodos,
+            health: newHealth,
+            lastHealthUpdate: new Date().toISOString()
+          };
+        })
+      );
+    };
+    
+    // Check every 30 seconds
+    const interval = setInterval(checkOverdueTasks, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -227,6 +332,64 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
             {/* Crop Info */}
             <div className="mb-6">
               <h2 className="text-xl font-bold text-black mb-4">{crop.name} - {t('crop')} {cropIndex + 1}</h2>
+              
+              {/* Crop Health Status */}
+              <div className="mb-4 p-4 bg-white rounded-xl">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-lg font-bold text-black">Crop Health Status</h3>
+                  <span className="text-sm text-gray-500">
+                    Updated: {new Date(crop.lastHealthUpdate).toLocaleTimeString()}
+                  </span>
+                </div>
+                
+                <div className="flex items-center space-x-4 mb-3">
+                  <div className="flex-1">
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                      <span>Health Score</span>
+                      <span>{crop.health}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${crop.health}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                        className={`h-3 rounded-full ${
+                          crop.health >= 75 ? 'bg-green-500' :
+                          crop.health >= 50 ? 'bg-yellow-500' :
+                          crop.health >= 25 ? 'bg-orange-500' : 'bg-red-500'
+                        }`}
+                      />
+                    </div>
+                  </div>
+                  <div className={`px-3 py-2 rounded-full text-sm font-semibold flex items-center space-x-1 ${getHealthStatus(crop.health).color}`}>
+                    <span>{getHealthStatus(crop.health).icon}</span>
+                    <span>{getHealthStatus(crop.health).text}</span>
+                  </div>
+                </div>
+                
+                {/* Health Factors */}
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div className="text-center p-2 bg-green-50 rounded">
+                    <div className="font-semibold text-green-600">
+                      {crop.todos.filter(t => t.completed).length}
+                    </div>
+                    <div className="text-gray-600">Completed</div>
+                  </div>
+                  <div className="text-center p-2 bg-orange-50 rounded">
+                    <div className="font-semibold text-orange-600">
+                      {crop.todos.filter(t => !t.completed).length}
+                    </div>
+                    <div className="text-gray-600">Pending</div>
+                  </div>
+                  <div className="text-center p-2 bg-red-50 rounded">
+                    <div className="font-semibold text-red-600">
+                      {crop.todos.filter(t => t.isOverdue && !t.completed).length}
+                    </div>
+                    <div className="text-gray-600">Overdue</div>
+                  </div>
+                </div>
+              </div>
+              
               <div className="grid grid-cols-2 gap-3 text-black text-sm">
                 <div><span className="font-semibold">{t('cropName')}:</span> {crop.name}</div>
                 <div><span className="font-semibold">{t('variety')}:</span> {crop.variety}</div>
@@ -258,23 +421,41 @@ const CropScreen: React.FC<CropScreenProps> = ({ onBack }) => {
                       className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 mt-0.5 ${
                         todo.completed 
                           ? 'bg-green-500 border-green-500 text-white' 
-                          : 'border-gray-400 text-transparent hover:border-green-400'
+                          : todo.isOverdue 
+                            ? 'border-red-400 bg-red-50 text-transparent hover:border-red-500'
+                            : 'border-gray-400 text-transparent hover:border-green-400'
                       }`}
                     >
                       {todo.completed && <Check size={16} />}
                     </motion.button>
                     <div className="flex-1">
-                      <span className={`text-black ${todo.completed ? 'line-through opacity-60' : ''}`}>
+                      <span className={`text-black ${
+                        todo.completed ? 'line-through opacity-60' : 
+                        todo.isOverdue ? 'text-red-600 font-medium' : ''
+                      }`}>
                         {todo.text}
+                        {todo.isOverdue && !todo.completed && (
+                          <span className="ml-2 text-red-500 text-xs font-bold">OVERDUE</span>
+                        )}
                       </span>
                       <div className="flex items-center space-x-2 mt-1">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(todo.priority)}`}>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          todo.isOverdue && !todo.completed 
+                            ? 'text-red-600 bg-red-100' 
+                            : getPriorityColor(todo.priority)
+                        }`}>
                           {todo.priority}
                         </span>
                         {todo.dueDate && (
                           <span className="text-xs text-gray-500 flex items-center">
                             <Calendar size={12} className="mr-1" />
                             {todo.dueDate}
+                          </span>
+                        )}
+                        {todo.completed && todo.completedAt && (
+                          <span className="text-xs text-green-600 flex items-center">
+                            <CheckCircle size={12} className="mr-1" />
+                            Completed {new Date(todo.completedAt).toLocaleDateString()}
                           </span>
                         )}
                       </div>
